@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Strings
+GenericName=Strings
+Comment=Instrument Tuner
+Categories=Utility;Education;
+Exec=com.gitlab.dusan-gvozdenovic.strings
+Icon=application-default-icon
+Terminal=false
+Type=Application
+Keywords=Strings;Audio;Tuner;Instrument;
