@@ -10,7 +10,7 @@ namespace Strings {
         public override void activate () {
             var window = new Gtk.ApplicationWindow (this);
             var header = new Gtk.HeaderBar ();
-            var input = new Gtk.Button.from_icon_name ("audio-input-microphone", Gtk.IconSize.BUTTON);
+            var input = new Gtk.Button.from_icon_name ("microphone-sensitivity-medium-symbolic", Gtk.IconSize.BUTTON);
             window.set_titlebar (header);
             window.set_default_size (600, 400);
             window.resizable = false;

@@ -14,6 +14,7 @@
 
 - `gtk3-demo` - demonstrates how widgets GTK widgets work, with code samples in C.
 - `gtk3-widget-factory` - showcases all GTK widgets and some of their interesting features.
+- `gtk3-icon-browser` - showcases some default icons and their names that can be used with GTK.
 - `devhelp` - offline documentation reader
 
 **Note:** These usually come bundled with GTK development libraries.
