@@ -1,0 +1,10 @@
+@define-color colorPrimary #020e1c;
+@define-color colorAccent #ff0000;
+/* @define-color textColorPrimary #0891a1; */
+@define-color textColorPrimary #0794c2;
+/* @define-color textColorPrimary @BLUEBERRY_100; */
+@define-color theme_bg_color @bg_color;
+
+.background {
+    background-color: mix(white, @colorPrimary, 0.98);
+}

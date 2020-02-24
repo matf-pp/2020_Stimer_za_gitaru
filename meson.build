@@ -1,6 +1,7 @@
 project('com.gitlab.dusan-gvozdenovic.strings', 'vala', 'c')
 
 i18n = import('i18n')
+gnome = import('gnome')
 
 conf = configuration_data()
 conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
@@ -22,9 +23,17 @@ deps = [
     dependency('alsa')
 ]
 
+asresources = gnome.compile_resources(
+    'as-resources',
+    join_paths('data', meson.project_name()) + '.gresource.xml',
+    source_dir: 'data',
+    c_name: 'as'
+)
+
 app = executable(
     meson.project_name(),
     sources,
+    asresources,
     c_args: [
         '-include', 'config.h',
         '-w'

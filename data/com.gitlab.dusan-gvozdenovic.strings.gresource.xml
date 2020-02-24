@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/gitlab/dusan-gvozdenovic/strings">
+    <file alias="stylesheet.css">data/stylesheet.css</file>
+    <!-- <file alias="AppIcon.png">icons/com.github.matfantinel.reminduck.png</file> -->
+  </gresource>
+</gresources>
