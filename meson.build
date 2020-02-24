@@ -13,6 +13,7 @@ include_directories('.')
 sources = files(
     'src/Config.vala',
     'src/Application.vala',
+    'src/Audio.vala',
     'src/Gauge.vala'
 )
 
