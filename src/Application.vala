@@ -15,12 +15,14 @@ namespace Strings {
             Gtk.StyleContext.add_provider_for_screen (screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
             var window = new Gtk.ApplicationWindow (this);
             var header = new Gtk.HeaderBar ();
-            var input = new Gtk.Button.from_icon_name ("microphone-sensitivity-medium-symbolic", Gtk.IconSize.BUTTON);
+            var input = new Gtk.Button.from_icon_name ("microphone-sensitivity-medium-symbolic");
+            var menu = new Gtk.Button.from_icon_name ("open-menu-symbolic");
             window.set_titlebar (header);
             window.set_default_size (600, 400);
             window.resizable = false;
             header.show_close_button = true;
             header.pack_start (input);
+            header.pack_end (menu);
             Gauge gauge = new Gauge ();
             window.add (gauge);
             window.title = _("Strings");
