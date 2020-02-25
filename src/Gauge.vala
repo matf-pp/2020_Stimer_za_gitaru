@@ -3,17 +3,19 @@ namespace Strings.Widgets {
         public uint padding_width { get; set; }
         public uint padding_height { get; set; }
 
-        public double angle_start { get; set; }
-        public double angle_end { get; set; }
+        public double angle_from { get; set; }
+        public double angle_to { get; set; }
         public double outer_arc_width { get; set; }
         public double inner_arc_width { get; set; }
         public double inner_circle_margin { get; set; }
 
+        public string text { get; set; }
+
         construct {
             padding_width = 5;
             padding_height = 5;
-            angle_start = -Math.PI / 4 + Math.PI;
-            angle_end = 5 * Math.PI / 4 + Math.PI;
+            angle_from = -Math.PI / 4 + Math.PI;
+            angle_to = 5 * Math.PI / 4 + Math.PI;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
@@ -37,12 +39,12 @@ namespace Strings.Widgets {
             out_pattern.add_color_stop_rgba (1, 0.0, 0.075, 0.176, 1);
             cr.set_source (out_pattern);
             cr.set_line_width (outer_arc_width);
-            cr.arc (center_x, center_y, radius, angle_start, angle_end);
+            cr.arc (center_x, center_y, radius,angle_from ,angle_to );
             cr.stroke ();
             // Draw inner arc
             cr.set_source_rgba (0.0, 0.075, 0.176, 1);
             cr.set_line_width (inner_arc_width);
-            cr.arc (center_x, center_y, radius - outer_arc_width / 2 - inner_arc_width / 2, angle_start, angle_end);
+            cr.arc (center_x, center_y, radius - outer_arc_width / 2 - inner_arc_width / 2,angle_from ,angle_to );
             cr.stroke ();
             // Draw inner circle
             var circ_pattern = new Cairo.Pattern.radial (
@@ -53,6 +55,17 @@ namespace Strings.Widgets {
             cr.set_source (circ_pattern);
             cr.arc (center_x, center_y, inner_circle_radius, 0, 2 * Math.PI);
             cr.fill ();
+            // Paint inner text
+            cr.set_line_width (5.0);
+            cr.set_font_size (22);
+            cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
+            cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
+            Cairo.TextExtents text_extents;
+            cr.text_extents (text, out text_extents);
+            cr.move_to (
+                center_x - text_extents.width / 2 - text_extents.x_bearing,
+                center_y - text_extents.height / 2 - text_extents.y_bearing);
+            cr.show_text (text);
             return false;
         }
     }

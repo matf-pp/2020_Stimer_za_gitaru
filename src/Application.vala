@@ -20,10 +20,16 @@ namespace Strings {
             window.set_titlebar (header);
             window.set_default_size (600, 400);
             window.resizable = false;
+            // elementaryOS-specific theming
+            var header_style_ctx = header.get_style_context ();
+            header_style_ctx.add_class (Gtk.STYLE_CLASS_FLAT);
+            header_style_ctx.add_class ("background");
+            header_style_ctx.add_class ("default-decoration");
             header.show_close_button = true;
             header.pack_start (input);
             header.pack_end (menu);
             Gauge gauge = new Gauge ();
+            gauge.text = "330 Hz";
             window.add (gauge);
             window.title = _("Strings");
             window.show_all ();
