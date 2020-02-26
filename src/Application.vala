@@ -22,7 +22,7 @@ namespace Strings {
             //  window.resizable = false;
             // elementaryOS-specific theming
             var header_style_ctx = header.get_style_context ();
-            //  header_style_ctx.add_class (Gtk.STYLE_CLASS_FLAT);
+            header_style_ctx.add_class (Gtk.STYLE_CLASS_FLAT);
             header_style_ctx.add_class ("background");
             header_style_ctx.add_class ("default-decoration");
             header.show_close_button = true;
