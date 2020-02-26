@@ -19,7 +19,7 @@ namespace Strings {
             var menu = new Gtk.Button.from_icon_name ("open-menu-symbolic");
             window.set_titlebar (header);
             window.set_default_size (600, 400);
-            //  window.resizable = false;
+            window.resizable = false;
             // elementaryOS-specific theming
             var header_style_ctx = header.get_style_context ();
             header_style_ctx.add_class (Gtk.STYLE_CLASS_FLAT);
