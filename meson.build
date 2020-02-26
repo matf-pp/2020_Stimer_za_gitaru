@@ -20,7 +20,8 @@ deps = [
     dependency('gobject-2.0'),
     dependency('glib-2.0'),
     dependency('gtk+-3.0'),
-    dependency('alsa')
+    dependency('alsa'),
+    meson.get_compiler('c').find_library('m', required: false),
 ]
 
 asresources = gnome.compile_resources(

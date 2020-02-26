@@ -14,8 +14,8 @@ namespace Strings.Widgets {
         construct {
             padding_width = 5;
             padding_height = 5;
-            angle_from = -Math.PI / 4 + Math.PI;
-            angle_to = 5 * Math.PI / 4 + Math.PI;
+            angle_from = 3 * Math.PI / 4;
+            angle_to = Math.PI / 4;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
@@ -27,10 +27,15 @@ namespace Strings.Widgets {
             var width = allocation.width - 2 * padding_width - outer_arc_width;
             var height = allocation.height - 2 * padding_height - outer_arc_width;
             var min_size = width <= height ? width : height;
-            var center_x = padding_width + width / 2 + outer_arc_width / 2;
-            var center_y = padding_height + (3.0 / 5) * height + outer_arc_width / 2;
             var radius = min_size / 2;
+            var sin_from = Math.fabs (Math.sin (angle_from)), sin_to = Math.fabs (Math.sin (angle_to));
+            var bot_arc_section = radius * (sin_from <= sin_to ? sin_to : sin_from);
             var inner_circle_radius = radius - outer_arc_width / 2 - inner_arc_width / 2 - inner_circle_margin;
+            var center_x = padding_width + width / 2 + outer_arc_width / 2;
+            // FIXME: Simplify calculation of center_y and remove magic_disp if possible
+            var magic_disp = bot_arc_section + 1.6 * outer_arc_width;
+            var min_disp = magic_disp < inner_circle_radius ? magic_disp : inner_circle_radius;
+            var center_y = padding_height + 0.5 * height + 0.5 * outer_arc_width + 0.5 * (radius - min_disp);
             // Draw outer arc
             var out_pattern = new Cairo.Pattern.radial (
                 center_x, center_y, radius - outer_arc_width / 2,
@@ -45,6 +50,21 @@ namespace Strings.Widgets {
             cr.set_source_rgba (0.0, 0.075, 0.176, 1);
             cr.set_line_width (inner_arc_width);
             cr.arc (center_x, center_y, radius - outer_arc_width / 2 - inner_arc_width / 2,angle_from ,angle_to );
+            cr.stroke ();
+            // Draw progress
+            cr.set_line_width (0.4 * inner_arc_width);
+            var inner_arc_radius = radius - outer_arc_width / 2 - inner_arc_width / 2;
+            var cap_ang_diff = 2 * Math.asin (0.4 * inner_arc_width / (inner_arc_radius * 4));
+
+            //  // DEBUG
+            //  cr.set_source_rgba (1.0, 0.0, 0.0, 1.0);
+            //  cr.set_line_cap (Cairo.LineCap.BUTT);
+            //  cr.arc (center_x, center_y, inner_arc_radius, -Math.PI / 2, - Math.PI / 3);
+            //  cr.stroke ();
+
+            cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+            cr.set_line_cap (Cairo.LineCap.ROUND);
+            cr.arc (center_x, center_y, inner_arc_radius, -Math.PI / 2 + cap_ang_diff, - Math.PI / 3 - cap_ang_diff);
             cr.stroke ();
             // Draw inner circle
             var circ_pattern = new Cairo.Pattern.radial (
