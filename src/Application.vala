@@ -62,5 +62,14 @@ namespace Strings {
 public static int main (string[] args) {
     Intl.setlocale (LocaleCategory.ALL, "");
     Intl.textdomain (Strings.Config.GETTEXT_PACKAGE);
+    var buff = new Complex[8];
+    buff[0].real = 1;
+    foreach (var k in buff) {
+        Posix.printf("%s ", k.to_string ());
+    }
+    Audio.fft (ref buff);
+    foreach (var k in buff) {
+        Posix.printf("%s ", k.to_string ());
+    }
     return new Strings.Application ().run (args);
 }
