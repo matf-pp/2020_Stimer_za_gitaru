@@ -69,10 +69,12 @@ namespace Strings.Widgets {
             var progress_angle = ANGLE_START + (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
-            cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
             cr.set_line_cap (Cairo.LineCap.ROUND);
-            cr.arc (center_x, center_y, inner_arc_radius, progress_from + cap_ang_diff, progress_to - cap_ang_diff);
-            cr.stroke ();
+            if (progress_from != progress_to) {
+                cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+                cr.arc (center_x, center_y, inner_arc_radius, progress_from + cap_ang_diff, progress_to - cap_ang_diff);
+                cr.stroke ();
+            }
             // Draw inner circle
             var circ_pattern = new Cairo.Pattern.radial (
                 center_x, center_y, 0.75 * inner_circle_radius,
@@ -87,7 +89,7 @@ namespace Strings.Widgets {
             cr.set_font_size (22);
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
-            var tgt_value_text = "%.2lf Hz".printf (target_value);
+            var tgt_value_text = "%.2lf Hz".printf (current_value);
             Cairo.TextExtents text_extents;
             cr.text_extents (tgt_value_text, out text_extents);
             cr.move_to (
@@ -100,11 +102,11 @@ namespace Strings.Widgets {
             Gdk.RGBA textColorPrimary;
             var style_context = new Gtk.StyleContext ();
             style_context.lookup_color ("textColorPrimary", out textColorPrimary);
-            cr.set_source_rgba (textColorPrimary.red, textColorPrimary.green, textColorPrimary.blue, textColorPrimary.alpha);
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             var angle_mid = (angle_from + angle_to) / 2;
             for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
                 // Draw dashes
+                //  cr.set_source_rgba (textColorPrimary.red, textColorPrimary.green, textColorPrimary.blue, textColorPrimary.alpha);
                 cr.set_line_width (dash_width);
                 var x_phi = center_x + radius * Math.cos (phi);
                 var y_phi  = center_y + radius * Math.sin (phi);
@@ -114,6 +116,7 @@ namespace Strings.Widgets {
                 cr.line_to (x_from + dash_length * Math.cos (phi), y_from + dash_length * Math.sin (phi));
                 cr.stroke ();
                 // Draw labels
+                cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
                 cr.set_line_width (3.0);
                 int cents = (int) Math.round ((phi - angle_mid) / (angle_to - angle_mid) * domain);
                 var cents_text = "%dc".printf (cents);
