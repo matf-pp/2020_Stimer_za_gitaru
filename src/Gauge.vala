@@ -5,6 +5,7 @@ namespace Strings.Widgets {
 
         public double angle_from { get; set; }
         public double angle_to { get; set; }
+        public double angle_diff { get; set; }
         public double outer_arc_width { get; set; }
         public double inner_arc_width { get; set; }
         public double inner_circle_margin { get; set; }
@@ -15,7 +16,8 @@ namespace Strings.Widgets {
             padding_width = 5;
             padding_height = 5;
             angle_from = 3 * Math.PI / 4;
-            angle_to = Math.PI / 4;
+            angle_to = 9 * Math.PI / 4;
+            angle_diff = (angle_to - angle_from) / 10;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
@@ -86,6 +88,26 @@ namespace Strings.Widgets {
                 center_x - text_extents.width / 2 - text_extents.x_bearing,
                 center_y - text_extents.height / 2 - text_extents.y_bearing);
             cr.show_text (text);
+            // Draw dashes and labels
+            cr.set_line_width (3.0);
+            cr.set_font_size (14);
+            Gdk.RGBA textColorPrimary;
+            var style_context = new Gtk.StyleContext ();
+            style_context.lookup_color ("textColorPrimary", out textColorPrimary);
+            cr.set_source_rgba (textColorPrimary.red, textColorPrimary.green, textColorPrimary.blue, textColorPrimary.alpha);
+            cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
+            var angle_mid = (angle_from + angle_to) / 2;
+            for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
+                int cents = (int) ((phi - angle_mid) / (angle_to - angle_mid) * 50);
+                var cents_text = "%dc".printf (cents);
+                Cairo.TextExtents extents;
+                cr.text_extents (cents_text, out extents);
+                var x_phi = center_x + radius * Math.cos (phi) - extents.width / 2 - extents.x_bearing;
+                var y_phi  = center_y + radius * Math.sin (phi) - extents.height / 2 - extents.y_bearing;
+                cr.move_to (x_phi, y_phi);
+                cr.show_text (cents_text);
+                cr.stroke ();
+            }
             return false;
         }
     }
