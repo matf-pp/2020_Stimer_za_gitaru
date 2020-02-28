@@ -103,13 +103,12 @@ namespace Strings.Widgets {
                 (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
-            if (progress_from != progress_to) {
-                cr.set_line_cap (Cairo.LineCap.ROUND);
-                cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
-                cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
-                        progress_from + cap_ang_diff, progress_to - cap_ang_diff);
-                cr.stroke ();
-            }
+            if (progress_from == progress_to) { }
+            cr.set_line_cap (Cairo.LineCap.ROUND);
+            cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+            cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
+                    progress_from + cap_ang_diff, progress_to - cap_ang_diff);
+            cr.stroke ();
         }
 
         protected void draw_inner_circle (Cairo.Context cr, ref DrawingContext dc) {
