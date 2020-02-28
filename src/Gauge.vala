@@ -10,17 +10,22 @@ namespace Strings.Widgets {
         public double inner_arc_width { get; set; }
         public double inner_circle_margin { get; set; }
 
-        public string text { get; set; }
+        public double current_value { get; set; }
+        public double target_value { get; set; }
+        public double domain { get; set; }
+
+        protected const double ANGLE_START = 1.5 * Math.PI;
 
         construct {
             padding_width = 5;
             padding_height = 5;
             angle_from = 3 * Math.PI / 4;
             angle_to = 9 * Math.PI / 4;
-            angle_diff = (angle_to - angle_from) / 10;
+            angle_diff = (angle_to - angle_from) / 8;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
+            domain = 100.0;
         }
 
         public override bool draw (Cairo.Context cr) {
@@ -58,6 +63,9 @@ namespace Strings.Widgets {
             var inner_arc_radius = radius - outer_arc_width / 2 - inner_arc_width / 2;
             var cap_ang_diff = 2 * Math.asin (0.4 * inner_arc_width / (inner_arc_radius * 4));
 
+            var progress_angle = ANGLE_START + (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
+            var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
+            var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
             //  // DEBUG
             //  cr.set_source_rgba (1.0, 0.0, 0.0, 1.0);
             //  cr.set_line_cap (Cairo.LineCap.BUTT);
@@ -66,7 +74,8 @@ namespace Strings.Widgets {
 
             cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
             cr.set_line_cap (Cairo.LineCap.ROUND);
-            cr.arc (center_x, center_y, inner_arc_radius, -Math.PI / 2 + cap_ang_diff, - Math.PI / 3 - cap_ang_diff);
+            // cr.arc (center_x, center_y, inner_arc_radius, - + cap_ang_diff, - Math.PI / 3 - cap_ang_diff);
+            cr.arc (center_x, center_y, inner_arc_radius, progress_from + cap_ang_diff, progress_to - cap_ang_diff);
             cr.stroke ();
             // Draw inner circle
             var circ_pattern = new Cairo.Pattern.radial (
@@ -82,12 +91,13 @@ namespace Strings.Widgets {
             cr.set_font_size (22);
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
+            var tgt_value_text = "%.2lf Hz".printf (target_value);
             Cairo.TextExtents text_extents;
-            cr.text_extents (text, out text_extents);
+            cr.text_extents (tgt_value_text, out text_extents);
             cr.move_to (
                 center_x - text_extents.width / 2 - text_extents.x_bearing,
                 center_y - text_extents.height / 2 - text_extents.y_bearing);
-            cr.show_text (text);
+            cr.show_text (tgt_value_text);
             // Draw dashes and labels
             cr.set_line_width (3.0);
             cr.set_font_size (14);
@@ -98,7 +108,7 @@ namespace Strings.Widgets {
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             var angle_mid = (angle_from + angle_to) / 2;
             for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
-                int cents = (int) ((phi - angle_mid) / (angle_to - angle_mid) * 50);
+                int cents = (int) Math.round ((phi - angle_mid) / (angle_to - angle_mid) * domain);
                 var cents_text = "%dc".printf (cents);
                 Cairo.TextExtents extents;
                 cr.text_extents (cents_text, out extents);

@@ -29,7 +29,8 @@ namespace Strings {
             header.pack_start (input);
             header.pack_end (menu);
             Gauge gauge = new Gauge ();
-            gauge.text = "330 Hz";
+            gauge.target_value = 330.0;
+            gauge.current_value = 230.0;
             window.add (gauge);
             window.title = _("Strings");
             window.show_all ();
