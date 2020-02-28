@@ -9,6 +9,8 @@ namespace Strings.Widgets {
         public double outer_arc_width { get; set; }
         public double inner_arc_width { get; set; }
         public double inner_circle_margin { get; set; }
+        public double dash_length { get; set; }
+        public double dash_width { get; set; }
 
         public double current_value { get; set; }
         public double target_value { get; set; }
@@ -25,6 +27,8 @@ namespace Strings.Widgets {
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
+            dash_width = 7.0;
+            dash_length = 10.0;
             domain = 100.0;
         }
 
@@ -62,19 +66,11 @@ namespace Strings.Widgets {
             cr.set_line_width (0.4 * inner_arc_width);
             var inner_arc_radius = radius - outer_arc_width / 2 - inner_arc_width / 2;
             var cap_ang_diff = 2 * Math.asin (0.4 * inner_arc_width / (inner_arc_radius * 4));
-
             var progress_angle = ANGLE_START + (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
-            //  // DEBUG
-            //  cr.set_source_rgba (1.0, 0.0, 0.0, 1.0);
-            //  cr.set_line_cap (Cairo.LineCap.BUTT);
-            //  cr.arc (center_x, center_y, inner_arc_radius, -Math.PI / 2, - Math.PI / 3);
-            //  cr.stroke ();
-
             cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
             cr.set_line_cap (Cairo.LineCap.ROUND);
-            // cr.arc (center_x, center_y, inner_arc_radius, - + cap_ang_diff, - Math.PI / 3 - cap_ang_diff);
             cr.arc (center_x, center_y, inner_arc_radius, progress_from + cap_ang_diff, progress_to - cap_ang_diff);
             cr.stroke ();
             // Draw inner circle
@@ -108,13 +104,22 @@ namespace Strings.Widgets {
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             var angle_mid = (angle_from + angle_to) / 2;
             for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
+                // Draw dashes
+                cr.set_line_width (dash_width);
+                var x_phi = center_x + radius * Math.cos (phi);
+                var y_phi  = center_y + radius * Math.sin (phi);
+                var x_from = x_phi + 0.5 * (outer_arc_width + dash_width) * Math.cos (phi);
+                var y_from = y_phi + 0.5 * (outer_arc_width + dash_width) * Math.sin (phi);
+                cr.move_to (x_from, y_from);
+                cr.line_to (x_from + dash_length * Math.cos (phi), y_from + dash_length * Math.sin (phi));
+                cr.stroke ();
+                // Draw labels
+                cr.set_line_width (3.0);
                 int cents = (int) Math.round ((phi - angle_mid) / (angle_to - angle_mid) * domain);
                 var cents_text = "%dc".printf (cents);
                 Cairo.TextExtents extents;
                 cr.text_extents (cents_text, out extents);
-                var x_phi = center_x + radius * Math.cos (phi) - extents.width / 2 - extents.x_bearing;
-                var y_phi  = center_y + radius * Math.sin (phi) - extents.height / 2 - extents.y_bearing;
-                cr.move_to (x_phi, y_phi);
+                cr.move_to (x_phi - extents.width / 2 - extents.x_bearing, y_phi - extents.height / 2 - extents.y_bearing);
                 cr.show_text (cents_text);
                 cr.stroke ();
             }
