@@ -8,7 +8,8 @@ namespace Strings {
         }
 
         public override void activate () {
-            Gtk.Settings.get_default ().set ("gtk-application-prefer-dark-theme", true);
+            var settings = Gtk.Settings.get_default ();
+            settings.gtk_application_prefer_dark_theme = true;
             var screen = Gdk.Screen.get_default ();
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/com/gitlab/dusan-gvozdenovic/strings/stylesheet.css");
@@ -21,10 +22,12 @@ namespace Strings {
             window.set_default_size (600, 400);
             // window.resizable = false;
             // elementaryOS-specific theming
-            var header_style_ctx = header.get_style_context ();
-            header_style_ctx.add_class (Gtk.STYLE_CLASS_FLAT);
-            header_style_ctx.add_class ("background");
-            header_style_ctx.add_class ("default-decoration");
+            if (settings.gtk_theme_name == "elementary") {
+                var header_style_ctx = header.get_style_context ();
+                header_style_ctx.add_class (Gtk.STYLE_CLASS_FLAT);
+                header_style_ctx.add_class ("background");
+                header_style_ctx.add_class ("default-decoration");
+            }
             header.show_close_button = true;
             header.pack_start (input);
             header.pack_end (menu);
