@@ -31,6 +31,12 @@ namespace Strings {
             Gauge gauge = new Gauge ();
             gauge.target_value = 330.0;
             gauge.current_value = 230.0;
+            //  gauge.current_value = 230.0;
+            GLib.Timeout.add (800, () => {
+                gauge.current_value += 10.0;
+                gauge.queue_draw ();
+                return gauge.current_value != gauge.target_value;
+            });
             window.add (gauge);
             window.title = _("Strings");
             window.show_all ();

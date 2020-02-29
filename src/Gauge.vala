@@ -103,7 +103,7 @@ namespace Strings.Widgets {
                 (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
-            if (progress_from == progress_to) { }
+            if (progress_from == progress_to) { return; }
             cr.set_line_cap (Cairo.LineCap.ROUND);
             //  cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
             cr.set_source (create_conic_gradient (ref dc));
