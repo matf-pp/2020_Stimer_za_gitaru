@@ -105,10 +105,40 @@ namespace Strings.Widgets {
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
             if (progress_from == progress_to) { }
             cr.set_line_cap (Cairo.LineCap.ROUND);
-            cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+            //  cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
+            cr.set_source (create_conic_gradient (ref dc));
             cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
                     progress_from + cap_ang_diff, progress_to - cap_ang_diff);
             cr.stroke ();
+            // DEBUG:
+            //  cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
+            //          0, 2 * Math.PI);
+            //  cr.fill ();
+        }
+
+        protected Cairo.MeshPattern create_conic_gradient (ref DrawingContext dc) {
+            var r_sin_from = dc.radius * Math.sin (angle_from);
+            var r_cos_from = dc.radius * Math.cos (angle_from);
+            var r_sin_to = dc.radius * Math.sin (angle_to);
+            var r_cos_to = dc.radius * Math.cos (angle_to);
+            var h = 4.0 / 3.0 * Math.tan ((angle_to - angle_from) / 4.0);
+            var pattern = new Cairo.MeshPattern ();
+            pattern.begin_patch ();
+            pattern.move_to (dc.center_x, dc.center_y);
+            pattern.line_to (dc.center_x + r_cos_from, dc.center_y + r_sin_from);
+            pattern.curve_to (
+                dc.center_x + r_cos_from - h * r_sin_from,
+                dc.center_y + r_sin_from + h * r_cos_from,
+                dc.center_x + r_cos_to + h * r_sin_to,
+                dc.center_y + r_sin_to - h * r_cos_to,
+                dc.center_x + r_cos_to,
+                dc.center_y + r_sin_to);
+            pattern.set_corner_color_rgba (0, 1.0, 0.0, 0.0, 1.0);
+            pattern.set_corner_color_rgba (1, 0.0, 0.0, 1.0, 1.0);
+            pattern.set_corner_color_rgba (2, 0.0, 0.0, 1.0, 1.0);
+            pattern.set_corner_color_rgba (3, 1.0, 0.0, 0.0, 1.0);
+            pattern.end_patch ();
+            return pattern;
         }
 
         protected void draw_inner_circle (Cairo.Context cr, ref DrawingContext dc) {
@@ -145,6 +175,7 @@ namespace Strings.Widgets {
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             var angle_mid = (angle_from + angle_to) / 2;
             cr.set_line_cap (Cairo.LineCap.ROUND);
+            cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
             for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
                 // Draw dashes
                 //  cr.set_source_rgba (textColorPrimary.red, textColorPrimary.green,
@@ -159,7 +190,6 @@ namespace Strings.Widgets {
                             y_from + dash_length * Math.sin (phi));
                 cr.stroke ();
                 // Draw labels
-                cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
                 cr.set_line_width (3.0);
                 int cents = (int) Math.round ((phi - angle_mid) / (angle_to - angle_mid) * domain);
                 var cents_text = "%dc".printf (cents);
