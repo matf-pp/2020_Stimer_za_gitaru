@@ -10,7 +10,7 @@ An FFT-based instrument tuner for GNU/Linux operating systems.
 valac
 meson
 gettext
-libgtk3-dev
+libgtk-3-dev
 libglib-2.0-dev
 libasound-2-dev
 libcairo2-dev
