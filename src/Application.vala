@@ -60,7 +60,7 @@ namespace Strings {
             var popover = new Gtk.Popover (input_select);
             popover.modal = true;
             var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
-            var names = Audio.get_pcm_device_names ();
+            var names = Audio.AlsaDevice.get_pcm_device_names ();
             selected_dev_id = names[0];
             var i_rb = new Gtk.RadioButton.with_label (null, names[0]);
             vbox.pack_start (i_rb, true, false);
