@@ -5,7 +5,6 @@ namespace Strings.Widgets {
 
         public double angle_from { get; set; }
         public double angle_to { get; set; }
-        public double angle_diff { get; set; }
         public double outer_arc_width { get; set; }
         public double inner_arc_width { get; set; }
         public double inner_circle_margin { get; set; }
@@ -16,6 +15,7 @@ namespace Strings.Widgets {
         public double target_value { get; set; }
         public double domain { get; set; }
 
+
         protected const double ANGLE_START = 1.5 * Math.PI;
 
         construct {
@@ -23,7 +23,6 @@ namespace Strings.Widgets {
             padding_height = 5;
             angle_from = 3 * Math.PI / 4;
             angle_to = 9 * Math.PI / 4;
-            angle_diff = (angle_to - angle_from) / 8;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
@@ -93,6 +92,21 @@ namespace Strings.Widgets {
                     dc.radius - outer_arc_width / 2 - inner_arc_width / 2,
                     angle_from, angle_to);
             cr.stroke ();
+        }
+
+        protected double calc_lbl_diff (Cairo.Context cr, ref DrawingContext dc) {
+            Cairo.TextExtents extents;
+            cr.set_font_size (14);
+            cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
+            cr.text_extents ("-%ldc".printf ((long) domain), out extents);
+            var x_from = dc.center_x + dc.radius * Math.cos (angle_from);
+            var y_from = dc.center_y + dc.radius * Math.sin (angle_from);
+            var x_lbl = x_from - extents.width / 2 - extents.x_bearing;
+            var y_lbl = y_from - extents.height / 2 - extents.y_bearing;
+            var r_1 = Math.sqrt (x_lbl * x_lbl + y_lbl * y_lbl);
+            x_lbl *= dc.radius / r_1;
+            y_lbl *= dc.radius / r_1;
+            return Math.atan ((x_from - x_lbl) / (y_from - y_lbl));
         }
 
         protected void draw_progress (Cairo.Context cr, ref DrawingContext dc) {
@@ -204,6 +218,10 @@ namespace Strings.Widgets {
             var angle_mid = (angle_from + angle_to) / 2;
             cr.set_line_cap (Cairo.LineCap.ROUND);
             cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
+            
+            var lbl_diff = calc_lbl_diff (cr, ref dc);
+            stdout.printf ("lbl_diff: %lf\n", lbl_diff);
+            var angle_diff = (angle_to - angle_from) / 8;
             for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
                 // Draw dashes
                 //  cr.set_source_rgba (textColorPrimary.red, textColorPrimary.green,
