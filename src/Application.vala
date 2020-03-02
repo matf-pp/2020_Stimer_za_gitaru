@@ -48,14 +48,15 @@ namespace Strings {
             gauge.target_value = 330.0;
             gauge.current_value = 230.0;
             ToneSlider slider = new ToneSlider ();
-            box.pack_start (gauge, true, true, 5);
+            //  box.pack_start (gauge, true, true, 5);
             box.pack_start (slider, true, false, 5);
             GLib.Timeout.add (40, () => {
                 gauge.current_value += 1.0;
                 gauge.queue_draw ();
                 return gauge.current_value != gauge.target_value;
             });
-            window.add (box);
+            //  window.add (box);
+            window.add (gauge);
             slider.set_size_request (100, 48);
             window.title = _("Strings");
             window.show_all ();
