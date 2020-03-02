@@ -42,15 +42,21 @@ namespace Strings {
             test_record.clicked.connect (test_record_clicked);
             header.pack_end (menu);
             header.pack_end (test_record);
+            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
+            box.homogeneous = false;
             Gauge gauge = new Gauge ();
             gauge.target_value = 330.0;
             gauge.current_value = 230.0;
+            ToneSlider slider = new ToneSlider ();
+            box.pack_start (gauge, true, true, 5);
+            box.pack_start (slider, true, false, 5);
             GLib.Timeout.add (40, () => {
                 gauge.current_value += 1.0;
                 gauge.queue_draw ();
                 return gauge.current_value != gauge.target_value;
             });
-            window.add (gauge);
+            window.add (box);
+            slider.set_size_request (100, 48);
             window.title = _("Strings");
             window.show_all ();
         }
