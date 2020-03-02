@@ -104,25 +104,54 @@ namespace Strings.Widgets {
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
             if (progress_from == progress_to) { return; }
+            progress_from += cap_ang_diff;
+            progress_to -= cap_ang_diff;
+            if (progress_to < progress_from) {
+                var tmp = progress_from;
+                progress_from = progress_to;
+                progress_to = tmp;
+            }
             cr.set_line_cap (Cairo.LineCap.ROUND);
             //  cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
             cr.set_source (create_conic_gradient (ref dc));
-            cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
-                    progress_from + cap_ang_diff, progress_to - cap_ang_diff);
+            cr.arc (dc.center_x, dc.center_y, inner_arc_radius, progress_from, progress_to);
             cr.stroke ();
             // DEBUG:
             //  cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
             //          0, 2 * Math.PI);
+            //  cr.stroke ();
             //  cr.fill ();
         }
 
         protected Cairo.MeshPattern create_conic_gradient (ref DrawingContext dc) {
+            var pattern = new Cairo.MeshPattern ();
+            // good = #12B4EC, meh = #F350F4, bad = #D96D22
+            Gdk.RGBA good = { 0.07058823529411765, 0.7058823529411765, 0.9254901960784314, 1.0 };
+            Gdk.RGBA meh =  { 0.9529411764705882, 0.3137254901960784, 0.9568627450980393, 1.0 };
+            Gdk.RGBA bad =  { 1.9908256880733946, 0.3137254901960784, 0.13333333333333333, 1.0 };
+            var angle_pc = 0.25 * (angle_to - angle_from);
+            double[] angles = {
+                angle_from + angle_pc, angle_from + 2 * angle_pc, angle_from + 3 * angle_pc
+            };
+            pattern_add_conic_sector (pattern, ref dc, angle_from, angles[0], bad, meh);
+            pattern_add_conic_sector (pattern, ref dc, angles[0], angles[1], meh, good);
+            pattern_add_conic_sector (pattern, ref dc, angles[1], angles[2], good, meh);
+            pattern_add_conic_sector (pattern, ref dc, angles[2], angle_to, meh, bad);
+            return pattern;
+        }
+
+        // Adapted from https://stackoverflow.com/questions/43230827/dynamiclly-growing-gradient-on-a-circle
+        protected void pattern_add_conic_sector (
+            Cairo.MeshPattern pattern,
+            ref DrawingContext dc,
+            double angle_from, double angle_to,
+            Gdk.RGBA from, Gdk.RGBA to
+        ) {
             var r_sin_from = dc.radius * Math.sin (angle_from);
             var r_cos_from = dc.radius * Math.cos (angle_from);
             var r_sin_to = dc.radius * Math.sin (angle_to);
             var r_cos_to = dc.radius * Math.cos (angle_to);
             var h = 4.0 / 3.0 * Math.tan ((angle_to - angle_from) / 4.0);
-            var pattern = new Cairo.MeshPattern ();
             pattern.begin_patch ();
             pattern.move_to (dc.center_x, dc.center_y);
             pattern.line_to (dc.center_x + r_cos_from, dc.center_y + r_sin_from);
@@ -133,12 +162,11 @@ namespace Strings.Widgets {
                 dc.center_y + r_sin_to - h * r_cos_to,
                 dc.center_x + r_cos_to,
                 dc.center_y + r_sin_to);
-            pattern.set_corner_color_rgba (0, 1.0, 0.0, 0.0, 1.0);
-            pattern.set_corner_color_rgba (1, 0.0, 0.0, 1.0, 1.0);
-            pattern.set_corner_color_rgba (2, 0.0, 0.0, 1.0, 1.0);
-            pattern.set_corner_color_rgba (3, 1.0, 0.0, 0.0, 1.0);
+            pattern.set_corner_color_rgba (0, from.red, from.green, from.blue, from.alpha);
+            pattern.set_corner_color_rgba (1, from.red, from.green, from.blue, from.alpha);
+            pattern.set_corner_color_rgba (2, to.red, to.green, to.blue, to.alpha);
+            pattern.set_corner_color_rgba (3, to.red, to.green, to.blue, to.alpha);
             pattern.end_patch ();
-            return pattern;
         }
 
         protected void draw_inner_circle (Cairo.Context cr, ref DrawingContext dc) {
