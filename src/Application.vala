@@ -8,6 +8,7 @@ namespace Strings {
         Gtk.Button input_select;
         Gtk.Button test_record;
         string selected_dev_id;
+        Audio.Device device;
 
         construct {
             application_id = Strings.Config.APPLICATION_ID;
@@ -15,6 +16,7 @@ namespace Strings {
         }
 
         public override void activate () {
+            device = new Audio.AlsaDevice ();
             var settings = Gtk.Settings.get_default ();
             settings.gtk_application_prefer_dark_theme = true;
             var screen = Gdk.Screen.get_default ();
@@ -60,7 +62,7 @@ namespace Strings {
             var popover = new Gtk.Popover (input_select);
             popover.modal = true;
             var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
-            var names = Audio.get_pcm_device_names ();
+            var names = Audio.AlsaDevice.get_device_names ();
             selected_dev_id = names[0];
             var i_rb = new Gtk.RadioButton.with_label (null, names[0]);
             vbox.pack_start (i_rb, true, false);
@@ -73,7 +75,17 @@ namespace Strings {
         }
 
         void test_record_clicked () {
-            Posix.printf ("Test record!\n");
+            Posix.printf ("Recording started!\n");
+            var signal = new Audio.Sample[30000];
+            try {
+                device.init ();
+                device.record (signal);
+            } catch (Audio.DeviceError devErr) {
+                // TODO: Handle this properly later
+            } finally {
+                device.close ();
+            }
+            Posix.printf ("Recording finished!\n");
         }
     }
 }
