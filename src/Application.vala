@@ -6,12 +6,19 @@ namespace Strings {
         Gtk.ApplicationWindow window;
         Gtk.HeaderBar header;
         Gtk.Button input_select;
+        Gtk.Button tone_select;
         Gtk.Button test_record;
         string selected_dev_id;
 
         construct {
             application_id = Strings.Config.APPLICATION_ID;
             flags = GLib.ApplicationFlags.FLAGS_NONE;
+        }
+
+        public enum ToneSystem {
+            ENGLISH,
+            CENTRAL_EUROPEAN,
+            SOUTHERN_EUROPEAN
         }
 
         public override void activate () {
@@ -36,27 +43,30 @@ namespace Strings {
             }
             header.show_close_button = true;
             build_input ();
+            build_tone_chooser ();
             header.pack_start (input_select);
             Gtk.Settings.get_default ().set ("gtk-application-prefer-dark-theme", true);
             test_record = new Gtk.Button.from_icon_name ("face-monkey");
             test_record.clicked.connect (test_record_clicked);
             header.pack_end (menu);
             header.pack_end (test_record);
-            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
-            box.homogeneous = false;
+            header.pack_end (tone_select);
+            //  var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
+            //  box.homogeneous = false;
             Gauge gauge = new Gauge ();
             gauge.target_value = 330.0;
             gauge.current_value = 230.0;
-            ToneSlider slider = new ToneSlider ();
-            box.pack_start (gauge, true, true, 5);
-            box.pack_start (slider, true, false, 5);
+            //  ToneSlider slider = new ToneSlider ();
+            //  box.pack_start (gauge, true, true, 5);
+            //  box.pack_start (slider, true, false, 5);
             GLib.Timeout.add (40, () => {
                 gauge.current_value += 1.0;
                 gauge.queue_draw ();
                 return gauge.current_value != gauge.target_value;
             });
-            window.add (box);
-            slider.set_size_request (100, 48);
+            //  window.add (box);
+            window.add (gauge);
+            //  slider.set_size_request (100, 48);
             window.title = _("Strings");
             window.show_all ();
         }
@@ -76,6 +86,21 @@ namespace Strings {
             }
             popover.add (vbox);
             input_select.clicked.connect (popover.show_all);
+        }
+
+        void build_tone_chooser () {
+            tone_select = new Gtk.Button.from_icon_name ("audio-x-generic-symbolic");
+            var popover = new Gtk.Popover (tone_select);
+            popover.modal = true;
+            var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
+            var i_rb = new Gtk.RadioButton.with_label (null, "English (A, B, C,...)");
+            vbox.pack_start (i_rb, true, false);
+            var rb = new Gtk.RadioButton.with_label_from_widget (i_rb, "Central European (A, H, C,...)");
+            vbox.pack_start (rb, true, false);
+            rb = new Gtk.RadioButton.with_label_from_widget (i_rb, "Southern European (La, Si, Do,...)");
+            vbox.pack_start (rb, true, false);
+            popover.add (vbox);
+            tone_select.clicked.connect (popover.show_all);
         }
 
         void test_record_clicked () {
