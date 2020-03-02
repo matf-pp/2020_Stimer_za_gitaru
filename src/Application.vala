@@ -21,9 +21,8 @@ namespace Strings {
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/com/gitlab/dusan-gvozdenovic/strings/stylesheet.css");
             Gtk.StyleContext.add_provider_for_screen (screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-            var window = new Gtk.ApplicationWindow (this);
-            var header = new Gtk.HeaderBar ();
-            var input = new Gtk.Button.from_icon_name ("microphone-sensitivity-medium-symbolic");
+            window = new Gtk.ApplicationWindow (this);
+            header = new Gtk.HeaderBar ();
             var menu = new Gtk.Button.from_icon_name ("open-menu-symbolic");
             window.set_titlebar (header);
             window.set_default_size (600, 400);
@@ -41,6 +40,7 @@ namespace Strings {
             Gtk.Settings.get_default ().set ("gtk-application-prefer-dark-theme", true);
             test_record = new Gtk.Button.from_icon_name ("face-monkey");
             test_record.clicked.connect (test_record_clicked);
+            header.pack_end (menu);
             header.pack_end (test_record);
             Gauge gauge = new Gauge ();
             gauge.target_value = 330.0;
@@ -68,10 +68,7 @@ namespace Strings {
         }
 
         void test_record_clicked () {
-            Posix.printf ("Test!\n");
-            int[] buffer = new int[128];
-            //TODO: Handle properly later
-            Audio.record_from_device (selected_dev_id, ref buffer);
+            Posix.printf ("Test record!\n");
         }
     }
 }

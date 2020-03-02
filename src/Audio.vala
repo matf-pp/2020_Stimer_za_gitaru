@@ -45,42 +45,6 @@ namespace Strings.Audio {
         return names.data;
     }
 
-    public void record_from_device (string device_id, ref int[] buffer) throws RecordError {
-        var buff_sz = buffer.length;
-        assert (buff_sz != 0 && (buff_sz & (buff_sz - 1)) == 0);
-        PcmDevice handle;
-        PcmHardwareParams hw_params;
-        PcmFormat format = PcmFormat.S16_LE;
-        int err;
-        if ((err = PcmDevice.open (out handle, device_id, PcmStream.CAPTURE)) < 0) {
-            var msg = "cannot open audio device %s (%s)".printf (device_id, Alsa.strerror (err));
-            throw new RecordError.UNKNOWN_DEVICE_NAME (msg);
-        }
-
-        if ((err = PcmHardwareParams.malloc (out hw_params)) < 0) {
-            var msg = "cannot allocate hardware parameter structure (%s)".printf (Alsa.strerror (err));
-            throw new RecordError.HW_PARAM_ALLOC_FAIL (msg);
-        }
-
-        if (handle.hw_params_set_access (hw_params, PcmAccess.RW_INTERLEAVED) < 0) {
-            var msg = "cannot set access type (%s)".printf (Alsa.strerror (err));
-            throw new RecordError.SET_HW_PARAM_ACC_FAIL (msg);
-        }
-
-        int capture_rate = (int) CAPTURE_RATE;
-        if ((err = handle.hw_params_set_rate_near (hw_params, ref capture_rate, 0)) < 0) {
-            var msg = "cannot set sample rate (%s)".printf (Alsa.strerror (err));
-            throw new RecordError.SET_SAMPLE_RATE_FAIL (msg);
-        }
-
-        if ((err = handle.hw_params (hw_params)) < 0) {
-            var msg = "cannot prepare audio interface for use (%s)".printf (Alsa.strerror (err));
-            throw new RecordError.PCM_PREPARE_FAIL (msg);
-        }
-
-        // TODO: Implement properly later
-    }
-
     [CCode (cheader_filename="alsa/asoundlib.h", cname="snd_card_next")]
     public extern int snd_card_next (int *rcard);
 
