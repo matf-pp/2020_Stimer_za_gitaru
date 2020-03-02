@@ -5,6 +5,7 @@ namespace Strings.Widgets {
 
         public double angle_from { get; set; }
         public double angle_to { get; set; }
+        public double angle_sections {get; set; }
         public double outer_arc_width { get; set; }
         public double inner_arc_width { get; set; }
         public double inner_circle_margin { get; set; }
@@ -23,6 +24,7 @@ namespace Strings.Widgets {
             padding_height = 5;
             angle_from = 3 * Math.PI / 4;
             angle_to = 9 * Math.PI / 4;
+            angle_sections = 8;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
@@ -58,7 +60,7 @@ namespace Strings.Widgets {
             dc.width = allocation.width - 2 * padding_width - outer_arc_width;
             dc.height = allocation.height - 2 * padding_height - outer_arc_width;
             dc.radius = (dc.width <= dc.height ? dc.width : dc.height) / 2;
-            // FIXME: Simplify calculation of center_y and remove magic_disp if possible
+            // TODO: Simplify calculation of center_y and remove magic_disp if possible
             var sin_from = Math.fabs (Math.sin (angle_from));
             var sin_to = Math.fabs (Math.sin (angle_to));
             var bot_arc_section = dc.radius * (sin_from <= sin_to ? sin_to : sin_from);
@@ -94,21 +96,6 @@ namespace Strings.Widgets {
             cr.stroke ();
         }
 
-        protected double calc_lbl_diff (Cairo.Context cr, ref DrawingContext dc) {
-            Cairo.TextExtents extents;
-            cr.set_font_size (14);
-            cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
-            cr.text_extents ("-%ldc".printf ((long) domain), out extents);
-            var x_from = dc.center_x + dc.radius * Math.cos (angle_from);
-            var y_from = dc.center_y + dc.radius * Math.sin (angle_from);
-            var x_lbl = x_from - extents.width / 2 - extents.x_bearing;
-            var y_lbl = y_from - extents.height / 2 - extents.y_bearing;
-            var r_1 = Math.sqrt (x_lbl * x_lbl + y_lbl * y_lbl);
-            x_lbl *= dc.radius / r_1;
-            y_lbl *= dc.radius / r_1;
-            return Math.atan ((x_from - x_lbl) / (y_from - y_lbl));
-        }
-
         protected void draw_progress (Cairo.Context cr, ref DrawingContext dc) {
             cr.set_line_width (0.4 * inner_arc_width);
             var inner_arc_radius = dc.radius - outer_arc_width / 2 - inner_arc_width / 2;
@@ -117,7 +104,6 @@ namespace Strings.Widgets {
                 (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
-            if (progress_from == progress_to) { return; }
             progress_from += cap_ang_diff;
             progress_to -= cap_ang_diff;
             if (progress_to < progress_from) {
@@ -126,15 +112,9 @@ namespace Strings.Widgets {
                 progress_to = tmp;
             }
             cr.set_line_cap (Cairo.LineCap.ROUND);
-            //  cr.set_source_rgba (1.0, 1.0, 1.0, 0.4);
             cr.set_source (create_conic_gradient (ref dc));
             cr.arc (dc.center_x, dc.center_y, inner_arc_radius, progress_from, progress_to);
             cr.stroke ();
-            // DEBUG:
-            //  cr.arc (dc.center_x, dc.center_y, inner_arc_radius,
-            //          0, 2 * Math.PI);
-            //  cr.stroke ();
-            //  cr.fill ();
         }
 
         protected Cairo.MeshPattern create_conic_gradient (ref DrawingContext dc) {
@@ -211,21 +191,18 @@ namespace Strings.Widgets {
         protected void draw_dashes_and_labels (Cairo.Context cr, ref DrawingContext dc) {
             cr.set_line_width (3.0);
             cr.set_font_size (14);
-            Gdk.RGBA textColorPrimary;
-            var style_context = new Gtk.StyleContext ();
-            style_context.lookup_color ("textColorPrimary", out textColorPrimary);
             cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             var angle_mid = (angle_from + angle_to) / 2;
             cr.set_line_cap (Cairo.LineCap.ROUND);
             cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
-            
             var lbl_diff = calc_lbl_diff (cr, ref dc);
-            stdout.printf ("lbl_diff: %lf\n", lbl_diff);
-            var angle_diff = (angle_to - angle_from) / 8;
-            for (var phi = angle_from; phi <= angle_to; phi += angle_diff) {
+            var a_from = angle_from + lbl_diff;
+            var a_to = angle_to - lbl_diff;
+            var angle_diff = (a_to - a_from) / angle_sections;
+            /* NOTE: added lbl_diff * 0.5 to resolve floating-point errors causing the last label
+             * not to be displayed. */
+            for (var phi = a_from; phi <= a_to + lbl_diff * 0.5; phi += angle_diff) {
                 // Draw dashes
-                //  cr.set_source_rgba (textColorPrimary.red, textColorPrimary.green,
-                //                      textColorPrimary.blue, textColorPrimary.alpha);
                 cr.set_line_width (dash_width);
                 var x_phi = dc.center_x + dc.radius * Math.cos (phi);
                 var y_phi  = dc.center_y + dc.radius * Math.sin (phi);
@@ -237,7 +214,7 @@ namespace Strings.Widgets {
                 cr.stroke ();
                 // Draw labels
                 cr.set_line_width (3.0);
-                int cents = (int) Math.round ((phi - angle_mid) / (angle_to - angle_mid) * domain);
+                int cents = (int) Math.round ((phi - angle_mid) / (a_to - angle_mid) * domain);
                 var cents_text = "%dc".printf (cents);
                 Cairo.TextExtents extents;
                 cr.text_extents (cents_text, out extents);
@@ -246,6 +223,24 @@ namespace Strings.Widgets {
                 cr.show_text (cents_text);
                 cr.stroke ();
             }
+        }
+
+        // TODO: Simplify if possible
+        // NOTE: Calling this makes sense only after setting font properties in Cairo.Context.
+        protected double calc_lbl_diff (Cairo.Context cr, ref DrawingContext dc) {
+            Cairo.TextExtents extents;
+            cr.text_extents ("-%ldc".printf ((long) domain), out extents);
+            var x_lbl = dc.center_x + dc.radius * Math.cos (angle_from) + extents.width / 2;
+            var y_lbl = dc.center_y + dc.radius * Math.sin (angle_from) + extents.height / 2;
+            var d_x = x_lbl - dc.center_x;
+            var d_y = y_lbl - dc.center_y;
+            var r = Math.sqrt (d_x * d_x + d_y * d_y);
+            var x_from = dc.center_x + r * Math.cos (angle_from);
+            var y_from = dc.center_y + r * Math.sin (angle_from);
+            d_x = x_from - x_lbl;
+            d_y = y_from - y_lbl;
+            var dist_sqr = d_x * d_x + d_y * d_y;
+            return Math.acos ((2 * r * r - dist_sqr) / (2 * r * r));
         }
     }
 }
