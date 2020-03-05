@@ -1,9 +1,7 @@
 
 namespace Strings.Audio {
-    public const uint CAPTURE_RATE = 44100;
 
     public struct Sample : int16 { }
-
 
     public errordomain DeviceError {
         INIT_FAIL,
@@ -11,8 +9,12 @@ namespace Strings.Audio {
     }
 
     public interface Device : Object {
+        public abstract int frame_size { get; set; }
+        public abstract int sample_rate { get; set; }
+        public abstract int channels { get; set; }
+
         public abstract void init () throws DeviceError;
-        public abstract void play (Sample[] buffer, uint frequency = 44100);
+        public abstract void play (Sample[] buffer) throws DeviceError;
         public abstract void record (Sample[] buffer) throws DeviceError;
         public abstract void close ();
     }

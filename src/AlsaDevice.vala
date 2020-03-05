@@ -2,12 +2,11 @@ using Alsa;
 
 namespace Strings.Audio {
      public class AlsaDevice : Object, Device {
+        public int frame_size { get; set; }
+        public int sample_rate { get; set; }
+        public int channels { get; set; }
+
         public string name { get; set; }
-        public uint8 channels { get; set; }
-        public uint buffer_frames { get; set; }
-
-        public int sample_rate;
-
         protected PcmDevice device;
         protected PcmHardwareParams hw_params;
         protected PcmFormat format;
@@ -16,7 +15,7 @@ namespace Strings.Audio {
             name = "default";
             sample_rate = 44100;
             channels = 2;
-            buffer_frames = 1 << 16;
+            frame_size = 1 << 12;
             format = PcmFormat.S16_LE;
         }
 
@@ -29,8 +28,8 @@ namespace Strings.Audio {
             }
 
             if ((err = PcmHardwareParams.malloc (out hw_params)) < 0) {
-                var msg = "ALSA Error (%d) - Cannot allocate hardware parameter structure (%s)".printf (
-                    err, Alsa.strerror (err));
+                var msg = "ALSA Error (%d) - Cannot allocate hardware parameter structure (%s)"
+                    .printf (err, Alsa.strerror (err));
                 throw new DeviceError.INIT_FAIL (msg);
             }
 
@@ -52,19 +51,15 @@ namespace Strings.Audio {
                 throw new DeviceError.INIT_FAIL (msg);
             }
 
-            if ((err = device.hw_params_set_rate_near (hw_params, ref sample_rate, 0)) < 0) {
+            //HACK: This works for some evil reason but it's not how it should work.
+            int rate = sample_rate / 2;
+            if ((err = device.hw_params_set_rate_near (hw_params, ref rate, 0)) < 0) {
                 var msg = "ALSA Error (%d) - Cannot set sample rate (%s)".printf (
                     err, Alsa.strerror (err));
                 throw new DeviceError.INIT_FAIL (msg);
             }
 
             if ((err = device.hw_params_set_channels (hw_params, channels)) < 0) {
-                var msg = "ALSA Error (%d) - Cannot set channel count (%s)".printf (
-                    err, Alsa.strerror (err));
-                throw new DeviceError.INIT_FAIL (msg);
-            }
-
-            if ((err = device.hw_params_set_period_size (hw_params, buffer_frames * 2, 0)) < 0) {
                 var msg = "ALSA Error (%d) - Cannot set channel count (%s)".printf (
                     err, Alsa.strerror (err));
                 throw new DeviceError.INIT_FAIL (msg);
@@ -77,32 +72,40 @@ namespace Strings.Audio {
             }
         }
 
-        public void play (Sample[] buffer, uint sample_rate = 44100) {
+        public void play (Sample[] buffer) throws DeviceError {
             stdout.printf("Not implemented yet!");
         }
 
         public void record (Sample[] buffer) throws DeviceError {
+            stdout.printf ("Recording from ALSA device %s.\n", name);
+            stdout.printf ("Sample type: Signed 16-bit little endian\n");
+            stdout.printf ("Sample rate: %d\n", sample_rate);
+            stdout.printf ("Channels: %d\n", channels);
             int err;
             if ((err = device.prepare ()) < 0) {
                 var msg = "ALSA Error (%d) - Cannot prepare audio interface for use (%s)".printf (
                     err, Alsa.strerror (err));
                 throw new DeviceError.INIT_FAIL (msg);
             }
-            var frame_width = buffer_frames * sizeof (Sample) * 2;
-            uint8[] frame = new uint8[frame_width];
-            var seconds = 3;
-            // Basic sound recording. Ignores buffer for now. Writes 3s recording to a file
-            var file = Posix.FILE.open ("test.txt", "w");
-            for (var i = 0; i < (seconds * sample_rate) / buffer_frames; i++) {
-                if ((err = (int) device.readi (frame, buffer_frames)) != buffer_frames) {
+            var frame_width = channels * frame_size;
+            var frames_whole = buffer.length / frame_width;
+            var frames_end = frames_whole * frame_width;
+            unowned uint8[] frame;
+            for (var i = 0; i < frames_whole; i++) {
+                frame = (uint8[]) buffer[(i * frame_width) : (i + 1) * frame_width];
+                if ((err = (int) device.readi (frame, frame_size)) != frame_size) {
                     var msg = "ALSA Error (%d) - Read from audio interface failed (%s)".printf (
                         err, Alsa.strerror (err));
                     throw new DeviceError.RECORD_FAIL (msg);
                 }
-                var samples = (Sample *) frame;
-                for (var j = 0; j < buffer_frames; j++) {
-                    file.printf("%d ", samples[j]);
-                }
+            }
+            if (frames_end == buffer.length) { return; }
+            frame = (uint8[]) buffer[frames_end : buffer.length];
+            var rest_size = frame.length / (channels * sizeof (Sample));
+            if ((err = (int) device.readi (frame, rest_size)) != rest_size) {
+                var msg = "ALSA Error (%d) - Read from audio interface failed (%s)".printf (
+                    err, Alsa.strerror (err));
+                throw new DeviceError.RECORD_FAIL (msg);
             }
         }
 
@@ -110,7 +113,8 @@ namespace Strings.Audio {
             device.close ();
         }
 
-        // Adapted from https://raw.githubusercontent.com/robelsharma/IdeaAudio/v1.0/IdeaLib/AudioAlsa.cpp
+        /* Adapted from
+         * https://raw.githubusercontent.com/robelsharma/IdeaAudio/v1.0/IdeaLib/AudioAlsa.cpp */
         public static string[] get_device_names () {
             CardInfo card_info;
             PcmInfo pcm_info;

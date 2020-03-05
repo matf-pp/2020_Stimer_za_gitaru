@@ -76,16 +76,20 @@ namespace Strings {
 
         void test_record_clicked () {
             Posix.printf ("Recording started!\n");
-            var signal = new Audio.Sample[30000];
+            var signal = new Audio.Sample[3 * device.sample_rate];
             try {
                 device.init ();
                 device.record (signal);
             } catch (Audio.DeviceError devErr) {
-                // TODO: Handle this properly later
+                stderr.printf ("%s\n", devErr.message);
             } finally {
                 device.close ();
             }
             Posix.printf ("Recording finished!\n");
+            var file = Posix.FILE.open ("test.txt", "w");
+            foreach (var sample in signal) {
+                file.printf("%d ", sample);
+            }
         }
     }
 }

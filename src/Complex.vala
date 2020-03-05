@@ -22,6 +22,14 @@ namespace Strings {
             return { real - b.real, im - b.im };
         }
 
+        public double arg () {
+            return Math.tan (im / real);
+        }
+
+        public double magnitude () {
+            return Math.fabs (Math.sqrt (real * real + im * im));
+        }
+
         public static void swap (ref Complex a, ref Complex b) {
             Complex tmp = a;
             a = b;
