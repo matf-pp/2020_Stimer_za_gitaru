@@ -8,6 +8,7 @@ namespace Strings {
         Gtk.Button input_select;
         Gtk.Button test_record;
         string selected_dev_id;
+        Audio.Device device;
 
         construct {
             application_id = Strings.Config.APPLICATION_ID;
@@ -15,12 +16,14 @@ namespace Strings {
         }
 
         public override void activate () {
+            device = new Audio.Alsa.Device ();
             var settings = Gtk.Settings.get_default ();
             settings.gtk_application_prefer_dark_theme = true;
             var screen = Gdk.Screen.get_default ();
             var provider = new Gtk.CssProvider ();
             provider.load_from_resource ("/com/gitlab/dusan-gvozdenovic/strings/stylesheet.css");
-            Gtk.StyleContext.add_provider_for_screen (screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            Gtk.StyleContext.add_provider_for_screen (
+                screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
             window = new Gtk.ApplicationWindow (this);
             header = new Gtk.HeaderBar ();
             var menu = new Gtk.Button.from_icon_name ("open-menu-symbolic");
@@ -67,7 +70,7 @@ namespace Strings {
             var popover = new Gtk.Popover (input_select);
             popover.modal = true;
             var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
-            var names = Audio.get_pcm_device_names ();
+            var names = Audio.Alsa.get_device_names ();
             selected_dev_id = names[0];
             var i_rb = new Gtk.RadioButton.with_label (null, names[0]);
             vbox.pack_start (i_rb, true, false);
@@ -80,7 +83,21 @@ namespace Strings {
         }
 
         void test_record_clicked () {
-            Posix.printf ("Test record!\n");
+            Posix.printf ("Recording started!\n");
+            var signal = new Audio.Sample[3 * device.sample_rate];
+            try {
+                device.init ();
+                device.record (signal);
+            } catch (Audio.DeviceError devErr) {
+                stderr.printf ("%s\n", devErr.message);
+            } finally {
+                device.close ();
+            }
+            Posix.printf ("Recording finished!\n");
+            var file = Posix.FILE.open ("test.txt", "w");
+            foreach (var sample in signal) {
+                file.printf("%d ", sample);
+            }
         }
     }
 }

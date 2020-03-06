@@ -14,6 +14,7 @@ sources = files(
     'src/Config.vala',
     'src/Application.vala',
     'src/Audio.vala',
+    'src/Alsa.vala',
     'src/Gauge.vala',
     'src/Complex.vala',
     'src/ToneSlider.vala'
