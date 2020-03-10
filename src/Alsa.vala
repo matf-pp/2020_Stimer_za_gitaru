@@ -115,14 +115,22 @@ namespace Strings.Audio.Alsa {
         }
     }
 
+    public class DeviceInfo {
+        public int card { get; set; }
+        public int device { get; set; }
+        public string card_name { get; set; }
+        public string device_name { get; set; }
+        public string get_id () { return "plughw:%d:%d".printf (card, device); }
+    }
+
     /* Adapted from
     * https://raw.githubusercontent.com/robelsharma/IdeaAudio/v1.0/IdeaLib/AudioAlsa.cpp */
-    public string[] get_device_names () {
+    public DeviceInfo[] get_device_infos (PcmStream stream = PcmStream.CAPTURE) {
         CardInfo card_info;
         PcmInfo pcm_info;
         CardInfo.alloc (out card_info);
         PcmInfo.malloc (out pcm_info);
-        Array<string> names = new Array<string> ();
+        var infos = new Array<DeviceInfo> ();
         int card_no = -1;
         while (snd_card_next (&card_no) >= 0 && card_no >= 0) {
             Posix.printf ("Card: %d\n", card_no);
@@ -138,15 +146,25 @@ namespace Strings.Audio.Alsa {
             while (snd_ctl_pcm_next_device(card, &dev) >= 0 && dev >= 0) {
                 pcm_info.set_device (dev);
                 pcm_info.set_subdevice (0);
-                pcm_info.set_stream (PcmStream.CAPTURE);
+                pcm_info.set_stream (stream);
                 if ((err = snd_ctl_pcm_info(card, pcm_info)) < 0) {
                     continue;
                 }
-                names.append_val("plughw:%d,%d".printf (card_no, dev));
+                var info = new DeviceInfo ();
+                info.card = card_no;
+                info.device = dev;
+                /* HACK: Vala tries to free these strings after use which results in SIGABRT.
+                 * Most likely a bug in Alsa vapi as they would probably behave correctly if the
+                 * return types were unowned. This workaround makes a copy of those strings without
+                 * involving ref counter. */
+                char *name = pcm_info.get_name ();
+                //  char *device = pcm_info.get_subdevice_name (); // This one as well
+                info.card_name = card_info.get_id ();
+                info.device_name = strdup ((string) name);
+                infos.append_val (info);
             }
         }
-        if (names.length == 1) { return new string[] { "default" }; }
-        return names.data;
+        return infos.data;
     }
 
     [CCode (cheader_filename="alsa/asoundlib.h", cname="snd_card_next")]

@@ -5,10 +5,15 @@ namespace Strings {
     public class Application: Gtk.Application {
         Gtk.ApplicationWindow window;
         Gtk.HeaderBar header;
-        Gtk.Button input_select;
+        Gtk.Button back_button;
+        Gtk.MenuButton menu_button;
         Gtk.Button test_record;
-        string selected_dev_id;
+        Gtk.Stack stack;
+        Gtk.AccelGroup accel_group;
         Audio.Device device;
+
+        const string STACK_TUNER = "tuner";
+        const string STACK_PREF_PANE = "pref-pane";
 
         construct {
             application_id = Strings.Config.APPLICATION_ID;
@@ -24,12 +29,15 @@ namespace Strings {
             provider.load_from_resource ("/com/gitlab/dusan-gvozdenovic/strings/stylesheet.css");
             Gtk.StyleContext.add_provider_for_screen (
                 screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+            Gtk.Settings.get_default ().set ("gtk-application-prefer-dark-theme", true);
             window = new Gtk.ApplicationWindow (this);
             header = new Gtk.HeaderBar ();
-            var menu = new Gtk.Button.from_icon_name ("open-menu-symbolic");
             window.set_titlebar (header);
             window.set_default_size (600, 400);
-            // window.resizable = false;
+            accel_group = new Gtk.AccelGroup ();
+            window.add_accel_group (accel_group);
+            build_menu ();
+            window.resizable = false;
             // elementaryOS-specific theming
             if (settings.gtk_theme_name == "elementary") {
                 var header_style_ctx = header.get_style_context ();
@@ -38,13 +46,22 @@ namespace Strings {
                 header_style_ctx.add_class ("default-decoration");
             }
             header.show_close_button = true;
-            build_input ();
-            header.pack_start (input_select);
-            Gtk.Settings.get_default ().set ("gtk-application-prefer-dark-theme", true);
+            //  header.pack_start (input_select);
             test_record = new Gtk.Button.from_icon_name ("face-monkey");
             test_record.clicked.connect (test_record_clicked);
-            header.pack_end (menu);
+            header.pack_end (menu_button);
             header.pack_end (test_record);
+            stack = new Gtk.Stack ();
+            stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT_RIGHT;
+            stack.get_style_context ().add_class ("container");
+            back_button = new Gtk.Button.with_label (_("Back"));
+            back_button.get_style_context ().add_class ("back-button");
+            back_button.clicked.connect (() => {
+                stack.visible_child_name = STACK_TUNER;
+                back_button.hide ();
+            });
+            back_button.valign = Gtk.Align.CENTER;
+            header.pack_start (back_button);
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
             box.homogeneous = false;
             Gauge gauge = new Gauge ();
@@ -53,34 +70,46 @@ namespace Strings {
             ToneSlider slider = new ToneSlider ();
             //  box.pack_start (gauge, true, true, 5);
             box.pack_start (slider, true, false, 5);
-            GLib.Timeout.add (40, () => {
+            Timeout.add (40, () => {
                 gauge.current_value += 1.0;
                 gauge.queue_draw ();
                 return gauge.current_value != gauge.target_value;
             });
-            //  window.add (box);
-            window.add (gauge);
+            var pref_pane = new PrefPane ();
+            stack.add_named (gauge, STACK_TUNER);
+            stack.add_named (pref_pane, STACK_PREF_PANE);
+            window.add (stack);
             slider.set_size_request (100, 48);
             window.title = _("Strings");
             window.show_all ();
+            back_button.hide ();
         }
 
-        void build_input () {
-            input_select = new Gtk.Button.from_icon_name ("microphone-sensitivity-medium-symbolic");
-            var popover = new Gtk.Popover (input_select);
-            popover.modal = true;
-            var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
-            var names = Audio.Alsa.get_device_names ();
-            selected_dev_id = names[0];
-            var i_rb = new Gtk.RadioButton.with_label (null, names[0]);
-            vbox.pack_start (i_rb, true, false);
-            for (var i = 1; i < names.length; i++) {
-                var rb = new Gtk.RadioButton.with_label_from_widget (i_rb, names[i]);
-                vbox.pack_start (rb, true, false);
-            }
-            popover.add (vbox);
-            input_select.clicked.connect (popover.show_all);
+        void build_menu () {
+            menu_button = new Gtk.MenuButton ();
+            menu_button.image = new Gtk.Image.from_icon_name ("open-menu-symbolic", Gtk.IconSize.BUTTON);
+            var menu = new Gtk.Menu ();
+            var pref_item = new Gtk.MenuItem.with_label (_("Preferences"));
+            pref_item.add_accelerator(
+                "activate", accel_group, ',',
+                Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE);
+            pref_item.activate.connect (() => {
+                stack.visible_child_name = STACK_PREF_PANE;
+                back_button.show_all ();
+            });
+            var quit_item = new Gtk.MenuItem.with_label (_("Quit"));
+            quit_item.activate.connect (this.quit);
+            quit_item.add_accelerator(
+                "activate", accel_group, 'Q',
+                Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE);
+            menu.append (pref_item);
+            menu.append (quit_item);
+            menu_button.popup = menu;
+            menu_button.valign = Gtk.Align.CENTER;
+            menu.show_all ();
         }
+
+        protected enum InputDeviceColumn { NAME, ID }
 
         void test_record_clicked () {
             Posix.printf ("Recording started!\n");
