@@ -11,24 +11,23 @@ namespace Strings.Audio {
 
 
         protected bool start () {
-            var i = 0;
             is_running = true;
             var signal = new Audio.Sample[3 * device.sample_rate];
-            device.init ();
-            while (is_running) {
-                try {
+            try {
+                device.init ();
+                while (is_running) {
                     device.record (signal);
-                } catch (Audio.DeviceError devErr) {
-                    stderr.printf ("%s\n", devErr.message);
-                    is_running = false;
-                } finally {
+                    var file = Posix.FILE.open ("test.txt", "w");
+                    foreach (var sample in signal) {
+                        file.printf("%d ", sample);
+                    }
                 }
-                var file = Posix.FILE.open ("test.txt", "w");
-                foreach (var sample in signal) {
-                    file.printf("%d ", sample);
-                }
+            } catch (Audio.DeviceError devErr) {
+                stderr.printf ("%s\n", devErr.message); 
+            } finally {
+                is_running = false;
+                device.close ();
             }
-            device.close ();
             return true;
         }
 

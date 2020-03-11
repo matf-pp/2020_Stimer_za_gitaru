@@ -7,7 +7,6 @@ namespace Strings {
         Gtk.HeaderBar header;
         Gtk.Button back_button;
         Gtk.MenuButton menu_button;
-        Gtk.Button test_record;
         Gtk.Stack stack;
         Gtk.AccelGroup accel_group;
         Audio.AudioThread audio_thread;
@@ -48,10 +47,7 @@ namespace Strings {
             }
             header.show_close_button = true;
             //  header.pack_start (input_select);
-            test_record = new Gtk.Button.from_icon_name ("face-monkey");
-            test_record.clicked.connect (test_record_clicked);
             header.pack_end (menu_button);
-            header.pack_end (test_record);
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT_RIGHT;
             stack.get_style_context ().add_class ("container");
@@ -111,24 +107,6 @@ namespace Strings {
         }
 
         protected enum InputDeviceColumn { NAME, ID }
-
-        void test_record_clicked () {
-            Posix.printf ("Recording started!\n");
-            var signal = new Audio.Sample[3 * device.sample_rate];
-            try {
-                device.init ();
-                device.record (signal);
-            } catch (Audio.DeviceError devErr) {
-                stderr.printf ("%s\n", devErr.message);
-            } finally {
-                device.close ();
-            }
-            Posix.printf ("Recording finished!\n");
-            var file = Posix.FILE.open ("test.txt", "w");
-            foreach (var sample in signal) {
-                file.printf("%d ", sample);
-            }
-        }
     }
 }
 
