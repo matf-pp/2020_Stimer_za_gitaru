@@ -10,7 +10,7 @@ namespace Strings {
         Gtk.Button test_record;
         Gtk.Stack stack;
         Gtk.AccelGroup accel_group;
-        Audio.Device device;
+        Audio.AudioThread audio_thread;
 
         const string STACK_TUNER = "tuner";
         const string STACK_PREF_PANE = "pref-pane";
@@ -21,7 +21,8 @@ namespace Strings {
         }
 
         public override void activate () {
-            device = new Audio.Alsa.Device ();
+            var device = new Audio.Alsa.Device ();
+            audio_thread = new Audio.AudioThread.from_device (device);
             var settings = Gtk.Settings.get_default ();
             settings.gtk_application_prefer_dark_theme = true;
             var screen = Gdk.Screen.get_default ();
