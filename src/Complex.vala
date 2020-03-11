@@ -4,7 +4,7 @@ namespace Strings {
         double im;
 
         public string to_string () {
-            return "(%lf, %lf)".printf (real, im);
+            return "%lf %+lfi".printf (real, im);
         }
 
         public Complex multiply (Complex b) {
@@ -26,8 +26,12 @@ namespace Strings {
             return Math.tan (im / real);
         }
 
+        public double magn_squared () {
+            return real * real + im * im;
+        }
+
         public double magnitude () {
-            return Math.fabs (Math.sqrt (real * real + im * im));
+            return Math.sqrt (magn_squared ());
         }
 
         public static void swap (ref Complex a, ref Complex b) {
