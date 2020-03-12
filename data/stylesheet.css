@@ -1,7 +1,9 @@
 @define-color colorPrimary #020e1c;
 @define-color textColorPrimary #0794c2;
+@define-color text_color #fefefe;
 @define-color bg_color mix(white, @colorPrimary, 0.98);
 
 .container {
+    color: @text_color;
     background: @bg_color;
 }

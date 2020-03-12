@@ -4,7 +4,7 @@ namespace Strings {
         double im;
 
         public string to_string () {
-            return "%lf %+lfi".printf (real, im);
+            return "(%lf, %lf)".printf (real, im);
         }
 
         public Complex multiply (Complex b) {
@@ -38,6 +38,20 @@ namespace Strings {
             Complex tmp = a;
             a = b;
             b = tmp;
+        }
+
+        public static size_t argmax (Complex[] array) {
+            assert (array.length > 0);
+            var max_i = 0;
+            var max_mgn = array[0].magn_squared ();
+            for (var i = 1; i < array.length; i++) {
+                var i_mgn = array[i].magn_squared ();
+                if (i_mgn > max_mgn) {
+                    max_i = i;
+                    max_mgn = i_mgn;
+                }
+            }
+            return max_i;
         }
     }
 }

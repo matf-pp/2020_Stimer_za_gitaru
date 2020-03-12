@@ -46,7 +46,7 @@ namespace Strings.Widgets {
             Gtk.TreeIter iter = { };
             input_combo.get_active_iter (out iter);
             model.get_value (iter, InputDeviceColumn.ID, out val_id);
-            stdout.printf ("You chose %s\n", val_id.dup_string ());
+            debug ("You chose %s\n", val_id.dup_string ());
         }
     }
 }

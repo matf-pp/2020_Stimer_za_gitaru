@@ -78,10 +78,10 @@ namespace Strings.Audio.Alsa {
         }
 
         public void record (Sample[] buffer) throws DeviceError {
-            stdout.printf ("Recording from ALSA device %s.\n", name);
-            stdout.printf ("Sample type: Signed 16-bit little endian\n");
-            stdout.printf ("Sample rate: %d\n", sample_rate);
-            stdout.printf ("Channels: %d\n", channels);
+            debug ("Recording from ALSA device %s.\n", name);
+            debug ("Sample type: Signed 16-bit little endian\n");
+            debug ("Sample rate: %d\n", sample_rate);
+            debug ("Channels: %d\n", channels);
             int err;
             if ((err = device.prepare ()) < 0) {
                 var msg = "ALSA Error (%d) - Cannot prepare audio interface for use (%s)".printf (
@@ -133,7 +133,7 @@ namespace Strings.Audio.Alsa {
         var infos = new Array<DeviceInfo> ();
         int card_no = -1;
         while (snd_card_next (&card_no) >= 0 && card_no >= 0) {
-            Posix.printf ("Card: %d\n", card_no);
+            debug ("Card: %d\n", card_no);
             int err = 0;
             Card card;
             if ((err = Card.open (out card, "hw:%d".printf(card_no))) < 0) {
