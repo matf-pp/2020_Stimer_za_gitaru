@@ -19,9 +19,18 @@ namespace Strings {
             flags = GLib.ApplicationFlags.FLAGS_NONE;
         }
 
-        public override void activate () {
+        public override void startup () {
             var device = new Audio.Alsa.Device ();
             audio_thread = new Audio.AudioThread.from_device (device);
+            base.startup ();
+        }
+
+        public override void shutdown () {
+            audio_thread.stop ();
+            base.shutdown ();
+        }
+
+        public override void activate () {
             var settings = Gtk.Settings.get_default ();
             settings.gtk_application_prefer_dark_theme = true;
             var screen = Gdk.Screen.get_default ();
@@ -64,6 +73,9 @@ namespace Strings {
             Gauge gauge = new Gauge ();
             gauge.target_value = 330.0;
             gauge.current_value = 230.0;
+            audio_thread.tone_recognized.connect (freq => {
+                debug ("Frequency: %.2lf", freq);
+            });
             ToneSlider slider = new ToneSlider ();
             //  box.pack_start (gauge, true, true, 5);
             box.pack_start (slider, true, false, 5);
@@ -105,8 +117,6 @@ namespace Strings {
             menu_button.valign = Gtk.Align.CENTER;
             menu.show_all ();
         }
-
-        protected enum InputDeviceColumn { NAME, ID }
     }
 }
 

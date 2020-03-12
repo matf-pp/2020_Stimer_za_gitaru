@@ -4,6 +4,8 @@ namespace Strings.Audio {
         protected bool running;
         protected Thread<bool> thread;
 
+        public signal void tone_recognized (double frequency);
+
         public AudioThread.from_device (Device device) {
             this.device = device;
             thread = new Thread<bool> ("audio-thread", start);
@@ -41,10 +43,11 @@ namespace Strings.Audio {
             fft (@signal);
             var max_idx = Complex.argmax (@signal[1 : @signal.length / 2 + 1]);
             var freq = (double) max_idx / @signal.length * device.sample_rate;
-            debug ("Frequency: %.2lf Hz\n", freq);
+            tone_recognized (freq);
         }
 
         public void stop () {
+            info ("Stopping audio thread!");
             running = false;
         }
     }
