@@ -1,5 +1,5 @@
 namespace Strings.Widgets {
-    public class Gauge: Gtk.DrawingArea {
+    public class Gauge: Gtk.Container {
         public uint padding_width { get; set; }
         public uint padding_height { get; set; }
 
@@ -16,8 +16,10 @@ namespace Strings.Widgets {
         public double target_value { get; set; }
         public double domain { get; set; }
 
+        protected Gtk.Widget inner_child = null;
 
         protected const double ANGLE_START = 1.5 * Math.PI;
+        protected const double INNER_CIRCLE_GRADIENT_START = 0.75;
 
         construct {
             padding_width = 5;
@@ -31,6 +33,9 @@ namespace Strings.Widgets {
             dash_width = 7.0;
             dash_length = 10.0;
             domain = 100.0;
+            base.set_has_window (false);
+            base.set_can_focus (true);
+            base.set_redraw_on_allocate (false);
         }
 
         protected struct DrawingContext {
@@ -43,20 +48,20 @@ namespace Strings.Widgets {
         }
 
         public override bool draw (Cairo.Context cr) {
-            DrawingContext dc = calculate_drawing_context ();
+            Gtk.Allocation allocation;
+            get_allocation (out allocation);
+            DrawingContext dc = calculate_drawing_context (ref allocation);
             draw_outer_arc (cr, ref dc);
             draw_inner_arc (cr, ref dc);
             draw_progress (cr, ref dc);
             draw_inner_circle (cr, ref dc);
-            draw_inner_text (cr, ref dc);
             draw_dashes_and_labels (cr, ref dc);
+            base.draw (cr);
             return false;
         }
 
-        protected DrawingContext calculate_drawing_context () {
+        protected DrawingContext calculate_drawing_context (ref Gtk.Allocation allocation) {
             DrawingContext dc = { };
-            Gtk.Allocation allocation;
-            get_allocation (out allocation);
             dc.width = allocation.width - 2 * padding_width - outer_arc_width;
             dc.height = allocation.height - 2 * padding_height - outer_arc_width;
             dc.radius = (dc.width <= dc.height ? dc.width : dc.height) / 2;
@@ -134,7 +139,8 @@ namespace Strings.Widgets {
             return pattern;
         }
 
-        // Adapted from https://stackoverflow.com/questions/43230827/dynamiclly-growing-gradient-on-a-circle
+        /** Adapted from
+         * https://stackoverflow.com/questions/43230827/dynamiclly-growing-gradient-on-a-circle */
         protected void pattern_add_conic_sector (
             Cairo.MeshPattern pattern,
             ref DrawingContext dc,
@@ -165,27 +171,13 @@ namespace Strings.Widgets {
 
         protected void draw_inner_circle (Cairo.Context cr, ref DrawingContext dc) {
             var circ_pattern = new Cairo.Pattern.radial (
-                dc.center_x, dc.center_y, 0.75 * dc.inner_circle_radius,
+                dc.center_x, dc.center_y, INNER_CIRCLE_GRADIENT_START * dc.inner_circle_radius,
                 dc.center_x, dc.center_y, dc.inner_circle_radius);
             circ_pattern.add_color_stop_rgba (0, 0.0, 0.0, 0.0, 0.0);
             circ_pattern.add_color_stop_rgba (1, 1.0, 1.0, 1.0, 0.1);
             cr.set_source (circ_pattern);
             cr.arc (dc.center_x, dc.center_y, dc.inner_circle_radius, 0, 2 * Math.PI);
             cr.fill ();
-        }
-
-        protected void draw_inner_text (Cairo.Context cr, ref DrawingContext dc) {
-            cr.set_line_width (5.0);
-            cr.set_font_size (22);
-            cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
-            cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
-            var tgt_value_text = "%.2lf Hz".printf (current_value);
-            Cairo.TextExtents text_extents;
-            cr.text_extents (tgt_value_text, out text_extents);
-            cr.move_to (
-                dc.center_x - text_extents.width / 2 - text_extents.x_bearing,
-                dc.center_y - text_extents.height / 2 - text_extents.y_bearing);
-            cr.show_text (tgt_value_text);
         }
 
         protected void draw_dashes_and_labels (Cairo.Context cr, ref DrawingContext dc) {
@@ -241,6 +233,63 @@ namespace Strings.Widgets {
             d_y = y_from - y_lbl;
             var dist_sqr = d_x * d_x + d_y * d_y;
             return Math.acos ((2 * r * r - dist_sqr) / (2 * r * r));
+        }
+
+        public override void add (Gtk.Widget widget) {
+            if (inner_child != null) { return; }
+            widget.set_parent (this);
+            inner_child = widget;
+        }
+
+        public override void remove (Gtk.Widget widget) {
+            if (inner_child != widget) { return; }
+            widget.unparent ();
+            inner_child = null;
+            if (get_visible () && widget.get_visible ()) {
+                queue_resize_no_redraw ();
+            }
+        }
+
+        public override void forall_internal (bool include_internals, Gtk.Callback callback) {
+            if (inner_child != null) { callback (inner_child); }
+        }
+
+        public override Gtk.SizeRequestMode get_request_mode () {
+            return inner_child != null ?
+                inner_child.get_request_mode ():
+                Gtk.SizeRequestMode.HEIGHT_FOR_WIDTH;
+        }
+
+        public override void size_allocate (Gtk.Allocation allocation) {
+            DrawingContext dc = calculate_drawing_context (ref allocation);
+            var side = INNER_CIRCLE_GRADIENT_START * dc.inner_circle_radius * Math.SQRT2;
+            Gtk.Allocation child_allocation = Gtk.Allocation ();
+            if (inner_child != null && inner_child.get_visible ()) {
+                child_allocation.x = (int) (dc.center_x - 0.5 * side);
+                child_allocation.y = (int) (dc.center_y - 0.5 * side);
+                child_allocation.width = (int) side;
+                child_allocation.height = (int) side;
+                inner_child.size_allocate (child_allocation);
+                if (get_realized ()) { inner_child.show (); }
+            }
+            if (get_realized () && inner_child != null) {
+                inner_child.set_child_visible (true);
+            }
+            base.size_allocate (allocation);
+        }
+
+        public new void get_preferred_size (out Gtk.Requisition minimum_size,
+                                            out Gtk.Requisition natural_size)
+        {
+            Gtk.Requisition child_minimum_size = { 0, 0 };
+            Gtk.Requisition child_natural_size = { 0, 0 };
+            if (inner_child != null && inner_child.get_visible ()) {
+                inner_child.get_preferred_size (out child_minimum_size, out child_natural_size);
+            }
+            minimum_size = { 0, 0 };
+            natural_size = { 0, 0 };
+            natural_size.width = child_natural_size.width;
+            natural_size.height = child_natural_size.height;
         }
     }
 }

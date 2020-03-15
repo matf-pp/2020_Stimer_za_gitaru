@@ -71,10 +71,21 @@ namespace Strings {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
             box.homogeneous = false;
             Gauge gauge = new Gauge ();
+            var inner_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+            var tone_label = new Gtk.Label ("E<sub>4</sub>");
+            tone_label.get_style_context ().add_class ("tone-name");
+            tone_label.use_markup = true;
+            var freq_label = new Gtk.Label ("330.00 Hz");
+            freq_label.get_style_context ().add_class ("freq-text");
+            inner_box.pack_start (tone_label);
+            inner_box.pack_start (freq_label);
+            gauge.add (inner_box);
             gauge.target_value = 330.0;
             gauge.current_value = 230.0;
             audio_thread.tone_recognized.connect (freq => {
-                debug ("Frequency: %.2lf", freq);
+                gauge.current_value = freq;
+                freq_label.label = "%.2lf Hz".printf (freq);
+                debug ("Frequency: %.2lf Hz", freq);
             });
             ToneSlider slider = new ToneSlider ();
             //  box.pack_start (gauge, true, true, 5);

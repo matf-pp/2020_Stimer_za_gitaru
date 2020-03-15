@@ -7,3 +7,11 @@
     color: @text_color;
     background: @bg_color;
 }
+
+.tone-name {
+    font-size: 48px;
+}
+
+.freq-text {
+    font-size: 18px;
+}
