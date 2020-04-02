@@ -4,6 +4,8 @@ An FFT-based instrument tuner for GNU/Linux operating systems.
 
 **Note:** This software is currently pre-alpha. Don't expect much and use at own risk.
 
+![Screenshot](data/screenshot.png)
+
 ## Building
 ### Prerequisites (debian based distros)
 ```

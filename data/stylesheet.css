@@ -4,8 +4,14 @@
 @define-color bg_color mix(white, @colorPrimary, 0.98);
 
 .container {
-    color: @text_color;
+    /* color: @text_color; */
     background: @bg_color;
+}
+
+.tone-display-nav-btn {
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 .tone-name {
@@ -14,4 +20,8 @@
 
 .freq-text {
     font-size: 18px;
+}
+
+.empty-label {
+    font-size: 0;
 }

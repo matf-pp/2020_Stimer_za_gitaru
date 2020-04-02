@@ -17,9 +17,10 @@ sources = files(
     'src/Alsa.vala',
     'src/Gauge.vala',
     'src/Complex.vala',
-    'src/ToneSlider.vala',
+    'src/ToneDisplay.vala',
     'src/PrefPane.vala',
-    'src/AudioThread.vala'
+    'src/AudioThread.vala',
+    'src/Tuning.vala'
 )
 
 deps = [

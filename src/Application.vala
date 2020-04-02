@@ -1,4 +1,5 @@
 using Strings;
+using Strings.Audio;
 using Strings.Widgets;
 
 namespace Strings {
@@ -9,7 +10,9 @@ namespace Strings {
         Gtk.MenuButton menu_button;
         Gtk.Stack stack;
         Gtk.AccelGroup accel_group;
-        Audio.AudioThread audio_thread;
+        AudioThread audio_thread;
+        Gauge gauge;
+        ToneDisplay display;
 
         const string STACK_TUNER = "tuner";
         const string STACK_PREF_PANE = "pref-pane";
@@ -38,7 +41,7 @@ namespace Strings {
             provider.load_from_resource ("/com/gitlab/dusan-gvozdenovic/strings/stylesheet.css");
             Gtk.StyleContext.add_provider_for_screen (
                 screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-            Gtk.Settings.get_default ().set ("gtk-application-prefer-dark-theme", true);
+            Gtk.Settings.get_default ().gtk_application_prefer_dark_theme = true;
             window = new Gtk.ApplicationWindow (this);
             header = new Gtk.HeaderBar ();
             window.set_titlebar (header);
@@ -68,38 +71,17 @@ namespace Strings {
             });
             back_button.valign = Gtk.Align.CENTER;
             header.pack_start (back_button);
-            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
+            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             box.homogeneous = false;
-            Gauge gauge = new Gauge ();
-            var inner_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            var tone_label = new Gtk.Label ("E<sub>4</sub>");
-            tone_label.get_style_context ().add_class ("tone-name");
-            tone_label.use_markup = true;
-            var freq_label = new Gtk.Label ("330.00 Hz");
-            freq_label.get_style_context ().add_class ("freq-text");
-            inner_box.pack_start (tone_label);
-            inner_box.pack_start (freq_label);
-            gauge.add (inner_box);
-            gauge.target_value = 330.0;
-            gauge.current_value = 230.0;
-            audio_thread.tone_recognized.connect (freq => {
-                gauge.current_value = freq;
-                freq_label.label = "%.2lf Hz".printf (freq);
-                debug ("Frequency: %.2lf Hz", freq);
-            });
-            ToneSlider slider = new ToneSlider ();
-            //  box.pack_start (gauge, true, true, 5);
-            box.pack_start (slider, true, false, 5);
-            Timeout.add (40, () => {
-                gauge.current_value += 1.0;
-                gauge.queue_draw ();
-                return gauge.current_value != gauge.target_value;
-            });
-            var pref_pane = new PrefPane ();
-            stack.add_named (gauge, STACK_TUNER);
-            stack.add_named (pref_pane, STACK_PREF_PANE);
+            gauge = new Gauge ();
+            display = new ToneDisplay ();
+            gauge.add (display);
+            audio_thread.tone_recognized.connect (tone_recognized);
+            box.pack_start (gauge, true, true);
+            stack.add_named (box, STACK_TUNER);
+            stack.add_named (new PrefPane (), STACK_PREF_PANE);
             window.add (stack);
-            slider.set_size_request (100, 48);
+            display.set_size_request (10, 48);
             window.title = _("Strings");
             window.show_all ();
             back_button.hide ();
@@ -127,6 +109,44 @@ namespace Strings {
             menu_button.popup = menu;
             menu_button.valign = Gtk.Align.CENTER;
             menu.show_all ();
+        }
+
+        void tone_recognized (double frequency) {
+            var config = Config.instance;
+            var idx = config.automatic_tuning ?
+                config.scale.closest_tone_index (frequency) :
+                display.target_tone_index;
+            update_gauge (idx, frequency);
+            display.frequency = frequency;
+            gauge.queue_draw ();
+            debug ("Frequency: %.2lf Hz", frequency);
+        }
+
+        void update_gauge (uint ref_idx, double frequency) {
+            var scale = Config.instance.scale;
+            Tuning.ToneInfo info = { };
+            Tuning.ToneInfo next_info = { };
+            Tuning.ToneInfo previous_info = { };
+            var prev_idx = scale.previous_tone_index (ref_idx);
+            var next_idx = scale.next_tone_index (ref_idx);
+            scale.tone_info (ref_idx, ref info);
+            scale.tone_info (prev_idx, ref previous_info);
+            scale.tone_info (next_idx, ref next_info);
+            var from_freq = previous_info.frequency;
+            var to_freq = next_info.frequency;
+            debug ("Frequency: %lf", frequency);
+            debug ("Target frequency: %lf", info.frequency);
+            debug ("From frequency: %lf", from_freq);
+            debug ("To frequency: %lf", to_freq);
+            var diff = 0.0;
+            if (frequency > info.frequency) {
+                diff = (frequency - info.frequency) / (to_freq - info.frequency) * 50.0;
+            } else {
+                diff = (frequency - info.frequency) / (info.frequency - from_freq) * 50.0;
+            }
+            debug ("Diff: %lf", diff);
+            gauge.current_value = diff;
+            display.target_tone_index = ref_idx;
         }
     }
 }

@@ -13,7 +13,6 @@ namespace Strings.Widgets {
         public double dash_width { get; set; }
 
         public double current_value { get; set; }
-        public double target_value { get; set; }
         public double domain { get; set; }
 
         protected Gtk.Widget inner_child = null;
@@ -26,13 +25,13 @@ namespace Strings.Widgets {
             padding_height = 5;
             angle_from = 3 * Math.PI / 4;
             angle_to = 9 * Math.PI / 4;
-            angle_sections = 8;
+            angle_sections = 10;
             outer_arc_width = 40.0;
             inner_arc_width = 20.0;
             inner_circle_margin = 30.0;
             dash_width = 7.0;
             dash_length = 10.0;
-            domain = 100.0;
+            domain = 50.0;
             base.set_has_window (false);
             base.set_can_focus (true);
             base.set_redraw_on_allocate (false);
@@ -45,6 +44,7 @@ namespace Strings.Widgets {
             public double center_x;
             public double center_y;
             public double inner_circle_radius;
+            Gdk.RGBA text_color;
         }
 
         public override bool draw (Cairo.Context cr) {
@@ -77,6 +77,9 @@ namespace Strings.Widgets {
             dc.center_x = padding_width + dc.width / 2 + outer_arc_width / 2;
             dc.center_y = padding_height + 0.5 * dc.height +
                           0.5 * outer_arc_width + 0.5 * (dc.radius - min_disp);
+            var sty_ctx = get_style_context ();
+            var flags = get_state_flags ();
+            dc.text_color = (Gdk.RGBA) sty_ctx.get_property (Gtk.STYLE_PROPERTY_COLOR, flags);
             return dc;
         }
 
@@ -106,9 +109,16 @@ namespace Strings.Widgets {
             var inner_arc_radius = dc.radius - outer_arc_width / 2 - inner_arc_width / 2;
             var cap_ang_diff = 2 * Math.asin (0.4 * inner_arc_width / (inner_arc_radius * 4));
             var progress_angle = ANGLE_START +
-                (current_value - target_value) / (2 * domain) * (angle_to - angle_from);
+                current_value / (2 * domain) * (angle_to - angle_from);
+            debug ("Angle start: %lf", ANGLE_START);
+            debug ("Angle from: %lf", angle_from);
+            debug ("Angle to: %lf", angle_to);
+            debug ("Current_value: %lf", current_value);
+            debug ("Progress angle: %lf", progress_angle);
             var progress_from = progress_angle <= ANGLE_START ? progress_angle : ANGLE_START;
             var progress_to = progress_angle <= ANGLE_START ? ANGLE_START : progress_angle;
+            if (progress_from < angle_from) { progress_from = angle_from; }
+            if (progress_to > angle_to) { progress_to = angle_to; }
             progress_from += cap_ang_diff;
             progress_to -= cap_ang_diff;
             if (progress_to < progress_from) {
@@ -174,19 +184,18 @@ namespace Strings.Widgets {
                 dc.center_x, dc.center_y, INNER_CIRCLE_GRADIENT_START * dc.inner_circle_radius,
                 dc.center_x, dc.center_y, dc.inner_circle_radius);
             circ_pattern.add_color_stop_rgba (0, 0.0, 0.0, 0.0, 0.0);
-            circ_pattern.add_color_stop_rgba (1, 1.0, 1.0, 1.0, 0.1);
+            circ_pattern.add_color_stop_rgba (1, dc.text_color.red, dc.text_color.green, dc.text_color.blue, 0.1);
             cr.set_source (circ_pattern);
             cr.arc (dc.center_x, dc.center_y, dc.inner_circle_radius, 0, 2 * Math.PI);
             cr.fill ();
         }
 
         protected void draw_dashes_and_labels (Cairo.Context cr, ref DrawingContext dc) {
-            cr.set_line_width (3.0);
             cr.set_font_size (14);
-            cr.select_font_face ("DejaVu Sans Mono", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
+            cr.select_font_face ("sans-serif", Cairo.FontSlant.NORMAL, Cairo.FontWeight.BOLD);
             var angle_mid = (angle_from + angle_to) / 2;
             cr.set_line_cap (Cairo.LineCap.ROUND);
-            cr.set_source_rgba (1.0, 1.0, 1.0, 0.6);
+            cr.set_source_rgba (dc.text_color.red, dc.text_color.green, dc.text_color.blue, 0.6);
             var lbl_diff = calc_lbl_diff (cr, ref dc);
             var a_from = angle_from + lbl_diff;
             var a_to = angle_to - lbl_diff;
