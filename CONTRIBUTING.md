@@ -5,6 +5,7 @@
 - [Vala Tutorial](https://wiki.gnome.org/Projects/Vala/Tutorial)
 - [Vala Examples](https://wiki.gnome.org/Projects/Vala/Examples)
 - [Valadoc](https://valadoc.org) - A documentation system for all popular Vala libraries.
+- [Valadoc - Comment Markup](https://valadoc.org/markup.htm)
 - [elementaryOS Developer Guide](https://elementary.io/docs/code/getting-started)
 - [GNOME Human Interface Guidelines (HIG)](https://developer.gnome.org/hig/stable)
 - [GTK.org](https://www.gtk.org) - Official Website
@@ -48,7 +49,7 @@
 3. Operators should be separated with one space.
 4. Method call operator **()** should always be separated with one space from the method name.
 
-Finally, when in doubt, look at the existing code and try to imitate its style :)
+**Note:** when in doubt, look at the existing code and try to imitate its style :)
 
 ## Finally,
-if you have read this entire thing, **welcome aboard :)**
+if you have read this entire thing, **welcome aboard! :)**
