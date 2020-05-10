@@ -29,7 +29,7 @@ ninja install             # Install system-wide
 
 ## Releases
 ### Nightly Builds
-Being still under development, the project is not yet publically released. However, you can head over to [CI / CD pipelines](https://gitlab.com/dusan-gvozdenovic/strings/pipelines) and grab the latest nightly build (.deb package).
+Being still under development, the project is not yet publicly released. You can head over to [CI / CD pipelines](https://gitlab.com/dusan-gvozdenovic/strings/pipelines) and grab the latest nightly build (.deb package).
 
 ## Contributing
 Please read the [contribution guide](CONTRIBUTING.md).
