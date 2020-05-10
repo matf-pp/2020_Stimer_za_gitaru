@@ -12,3 +12,7 @@ build:
         - debuild --no-tgz-check
         - cd debian
         - dpkg-deb --build com.gitlab.dusan-gvozdenovic.strings
+    artifacts:
+        paths:
+            - com.gitlab.dusan-gvozdenovic.strings.deb
+        expire_in: 1 day
