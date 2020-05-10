@@ -1,0 +1,21 @@
+# Names should be added to this file with this pattern:
+#
+# For individuals:
+#   Name <email address>
+#
+# For organizations:
+#   Organization <fnmatch pattern>
+#
+# See python fnmatch module documentation for more information.
+#
+# Please keep the list sorted.
+
+
+# BEGIN individuals section.
+Dušan Gvozdenović <dusan.gvozdenovic.99@gmail.com>
+Irena Vasiljević <irenav998@gmail.com>
+Marija Obrenović <marijaobrenovic20@gmail.com>
+# END individuals section.
+
+# BEGIN organizations section.
+# END organizations section.
