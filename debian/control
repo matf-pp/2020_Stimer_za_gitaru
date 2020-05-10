@@ -1,0 +1,19 @@
+Source: com.gitlab.dusan-gvozdenovic.strings
+Section: x11
+Priority: optional
+Maintainer: Dušan Gvozdenović <dusan.gvozdenovic.99@gmail.com>
+Build-Depends: cmake (>= 2.8),
+               debhelper (>= 9),
+               meson,
+               gettext,
+               libgtk-3-dev,
+               libglib2.0-dev,
+               libasound2-dev,
+               libcairo2-dev,
+               valac (>= 0.40.22)
+Standards-Version: 4.1.1
+
+Package: com.gitlab.dusan-gvozdenovic.strings
+Architecture: amd64
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: An FFT-based instrument tuner for GNU/Linux operating systems.
