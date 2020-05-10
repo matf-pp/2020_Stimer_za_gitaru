@@ -3,7 +3,7 @@ image: elementary/docker:stable
 before_script:
     - valac --version
     - uname -a
-    - apt-get update -qq && apt-get install -y -qq devscripts build-essential lintian
+    - apt-get update -qq && apt-get install -y -qq equivs devscripts build-essential lintian
 
 build:
     stage: build
