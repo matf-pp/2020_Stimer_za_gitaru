@@ -13,8 +13,8 @@ valac
 meson
 gettext
 libgtk-3-dev
-libglib-2.0-dev
-libasound-2-dev
+libglib2.0-dev
+libasound2-dev
 libcairo2-dev
 ```
 
