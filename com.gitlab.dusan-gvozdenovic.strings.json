@@ -1,8 +1,8 @@
 {
-    "app-id": "com.gitlab.dgvozdenovic.strings",
-    "runtime": "org.freedesktop.Platform",
-    "runtime-version": "19.08",
-    "sdk": "org.freedesktop.Sdk",
+    "app-id": "com.gitlab.dgvozdenovic.Strings",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "3.36",
+    "sdk": "org.gnome.Sdk",
     "base": "io.elementary.BaseApp",
     "base-version": "juno-19.08",
     "command": "com.gitlab.dusan-gvozdenovic.strings",
