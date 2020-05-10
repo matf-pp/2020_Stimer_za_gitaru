@@ -1,0 +1,8 @@
+image: elementary/docker:stable
+
+build:
+    stage: build
+    script:
+        - debuild --no-tgz-check
+        - cd debian
+        - dpkg-deb --build com.gitlab.dusan-gvozdenovic.strings
