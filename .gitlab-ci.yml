@@ -8,6 +8,7 @@ before_script:
 build:
     stage: build
     script:
+        - mk-build-deps --install
         - debuild --no-tgz-check
         - cd debian
         - dpkg-deb --build com.gitlab.dusan-gvozdenovic.strings
