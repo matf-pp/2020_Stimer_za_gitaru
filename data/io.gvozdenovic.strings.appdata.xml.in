@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2020 Dušan Gvozdenović <dusan.gvozdenovic.99@gmail.com> -->
 <component type="desktop">
-  <id>com.gitlab.dusan-gvozdenovic.strings</id>
+  <id>io.gvozdenovic.strings</id>
   <metadata_license>CC0</metadata_license>
   <project_license>GPL-3.0+</project_license>
   <name>Strings</name>
@@ -15,7 +15,7 @@
     </release>
   </releases>
   <provides>
-    <binary>com.gitlab.dusan-gvozdenovic.strings</binary>
+    <binary>io.gvozdenovic.strings</binary>
   </provides>
   <content_rating type="oars-1.1">
     <content_attribute id="violence-cartoon">none</content_attribute>

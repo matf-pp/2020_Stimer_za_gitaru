@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the com.gitlab.dusan-gvozdenovic.strings package.
+# This file is distributed under the same license as the io.gvozdenovic.strings package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: com.gitlab.dusan-gvozdenovic.strings\n"
+"Project-Id-Version: io.gvozdenovic.strings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-19 17:53+0100\n"
+"POT-Creation-Date: 2020-08-15 14:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,24 +17,31 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/Application.vala:22
-#: data/com.gitlab.dusan-gvozdenovic.strings.desktop.in:3
-#: data/com.gitlab.dusan-gvozdenovic.strings.desktop.in:4
+#: src/Application.vala:85
+msgid "Back"
+msgstr ""
+
+#: src/Application.vala:104 data/io.gvozdenovic.strings.desktop.in:3
+#: data/io.gvozdenovic.strings.desktop.in:4
 msgid "Strings"
 msgstr ""
 
-#: src/Gauge.vala:16
-msgid "Hello, World :)"
+#: src/Application.vala:113
+msgid "Preferences"
 msgstr ""
 
-#: data/com.gitlab.dusan-gvozdenovic.strings.desktop.in:5
+#: src/Application.vala:121
+msgid "Quit"
+msgstr ""
+
+#: data/io.gvozdenovic.strings.desktop.in:5
 msgid "Instrument Tuner"
 msgstr ""
 
-#: data/com.gitlab.dusan-gvozdenovic.strings.desktop.in:8
+#: data/io.gvozdenovic.strings.desktop.in:8
 msgid "application-default-icon"
 msgstr ""
 
-#: data/com.gitlab.dusan-gvozdenovic.strings.desktop.in:10
+#: data/io.gvozdenovic.strings.desktop.in:10
 msgid "Strings;Audio;Tuner;Instrument;"
 msgstr ""

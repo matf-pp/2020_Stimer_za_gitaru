@@ -1,4 +1,4 @@
-project('com.gitlab.dusan-gvozdenovic.strings', 'vala', 'c')
+project('io.gvozdenovic.strings', 'vala', 'c')
 
 i18n = import('i18n')
 gnome = import('gnome')

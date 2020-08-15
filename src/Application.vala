@@ -57,7 +57,7 @@ namespace Strings {
             settings.gtk_application_prefer_dark_theme = true;
             var screen = Gdk.Screen.get_default ();
             var provider = new Gtk.CssProvider ();
-            provider.load_from_resource ("/com/gitlab/dusan-gvozdenovic/strings/stylesheet.css");
+            provider.load_from_resource ("/io/gvozdenovic/strings/stylesheet.css");
             Gtk.StyleContext.add_provider_for_screen (
                 screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
             Gtk.Settings.get_default ().gtk_application_prefer_dark_theme = true;

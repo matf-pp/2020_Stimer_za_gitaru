@@ -10,8 +10,8 @@ build:
     script:
         - mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'
         - debuild --no-tgz-check
-        - cd debian && dpkg-deb --build com.gitlab.dusan-gvozdenovic.strings
+        - cd debian && dpkg-deb --build io.gvozdenovic.strings
     artifacts:
         paths:
-            - debian/com.gitlab.dusan-gvozdenovic.strings.deb
+            - debian/io.gvozdenovic.strings.deb
         expire_in: 1 day

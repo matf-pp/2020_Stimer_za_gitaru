@@ -1,4 +1,4 @@
-Source: com.gitlab.dusan-gvozdenovic.strings
+Source: io.gvozdenovic.strings
 Section: x11
 Priority: optional
 Maintainer: Dušan Gvozdenović <dusan.gvozdenovic.99@gmail.com>
@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9),
                valac (>= 0.40.22)
 Standards-Version: 4.1.1
 
-Package: com.gitlab.dusan-gvozdenovic.strings
+Package: io.gvozdenovic.strings
 Architecture: amd64
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: An FFT-based instrument tuner for GNU/Linux operating systems.
