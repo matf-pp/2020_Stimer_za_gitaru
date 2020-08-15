@@ -45,7 +45,7 @@ namespace Strings.Widgets {
         public uint target_tone_index {
             get { return _target_tone_index; }
             set {
-                assert (value >= 0 && value <= Config.instance.scale.length);
+                assert (value >= 0 && value <= Config.instance.tuning_standard.length);
                 if (_target_tone_index == value) { return; }
                 Gtk.StackTransitionType transition = Gtk.StackTransitionType.NONE;
                 if (!Config.instance.automatic_tuning) {
@@ -54,7 +54,7 @@ namespace Strings.Widgets {
                         Gtk.StackTransitionType.SLIDE_RIGHT;
                 }
                 ToneInfo info = { };
-                Config.instance.scale.tone_info (value, ref info);
+                Config.instance.tuning_standard.tone_info (value, ref info);
                 set_tone (ref info, transition);
                 _target_tone_index = value;
             }
@@ -114,9 +114,9 @@ namespace Strings.Widgets {
         }
 
         private void build_tone_slider () {
-            _target_tone_index = Config.instance.scale.closest_tone_index (frequency);
+            _target_tone_index = Config.instance.tuning_standard.closest_tone_index (frequency);
             ToneInfo info = { };
-            Config.instance.scale.tone_info (_target_tone_index, ref info);
+            Config.instance.tuning_standard.tone_info (_target_tone_index, ref info);
             tone_slider = new Gtk.Stack ();
             tone_label = new Gtk.Label (info.to_pango_markup ());
             tone_label.get_style_context ().add_class ("tone-name");
@@ -172,15 +172,15 @@ namespace Strings.Widgets {
         }
 
         protected void next_tone () {
-            var scale = Config.instance.scale;
-            if (target_tone_index >= scale.length - 1) { return; }
-            target_tone_index = scale.next_tone_index (target_tone_index);
+            var std = Config.instance.tuning_standard;
+            if (target_tone_index >= std.length - 1) { return; }
+            target_tone_index = std.next_tone_index (target_tone_index);
         }
 
         protected void previous_tone () {
-            var scale = Config.instance.scale;
+            var std = Config.instance.tuning_standard;
             if (target_tone_index <= 0) { return; }
-            target_tone_index = scale.previous_tone_index (target_tone_index);
+            target_tone_index = std.previous_tone_index (target_tone_index);
         }
     }
 }

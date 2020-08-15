@@ -37,11 +37,11 @@ namespace Strings {
         }
 
         protected Config () {
-            scale = new Tuning.StandardConcertScale ();
+            tuning_standard = new Tuning.StandardConcertTuning ();
             automatic_tuning = true;
         }
 
-        public Tuning.Scale scale { get; set; }
+        public Tuning.TuningStandard tuning_standard { get; set; }
 
         public bool automatic_tuning { get; set; }
     }

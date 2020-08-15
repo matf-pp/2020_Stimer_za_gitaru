@@ -133,7 +133,7 @@ namespace Strings {
         void tone_recognized (double frequency) {
             var config = Config.instance;
             var idx = config.automatic_tuning ?
-                config.scale.closest_tone_index (frequency) :
+                config.tuning_standard.closest_tone_index (frequency) :
                 display.target_tone_index;
             update_gauge (idx, frequency);
             display.frequency = frequency;
@@ -142,15 +142,15 @@ namespace Strings {
         }
 
         void update_gauge (uint ref_idx, double frequency) {
-            var scale = Config.instance.scale;
+            var std = Config.instance.tuning_standard;
             Tuning.ToneInfo info = { };
             Tuning.ToneInfo next_info = { };
             Tuning.ToneInfo previous_info = { };
-            var prev_idx = scale.previous_tone_index (ref_idx);
-            var next_idx = scale.next_tone_index (ref_idx);
-            scale.tone_info (ref_idx, ref info);
-            scale.tone_info (prev_idx, ref previous_info);
-            scale.tone_info (next_idx, ref next_info);
+            var prev_idx = std.previous_tone_index (ref_idx);
+            var next_idx = std.next_tone_index (ref_idx);
+            std.tone_info (ref_idx, ref info);
+            std.tone_info (prev_idx, ref previous_info);
+            std.tone_info (next_idx, ref next_info);
             var from_freq = previous_info.frequency;
             var to_freq = next_info.frequency;
             debug ("Frequency: %lf", frequency);

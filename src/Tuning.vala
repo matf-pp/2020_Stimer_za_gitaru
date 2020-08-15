@@ -39,7 +39,11 @@ namespace Strings.Audio.Tuning {
         }
     }
 
-    public interface Scale : Object {
+
+    /** NOTE: Still not accurately named but not sure how a set of tones
+     * according to which instrument is tuned is called. (e.g. a set of tones
+     * generated from standard concert pitch (A = 440.00Hz)) */
+    public interface TuningStandard : Object {
 
         public abstract uint length { get; }
 
@@ -52,10 +56,11 @@ namespace Strings.Audio.Tuning {
         public abstract void tone_info (uint index, ref ToneInfo info);
     }
 
-    public class StandardConcertScale : Scale, Object {
+    // Reference: https://en.wikipedia.org/wiki/Concert_pitch
+    public class StandardConcertTuning : TuningStandard, Object {
 
         /* Tones from C0 to B8 */
-        public const double[] SCALE = {
+        public const double[] TONES = {
             //C       C#      D       D#      E       F       F#      G       G#      A       A#      B
             16.352, 17.324,	18.354,	19.445,	20.602,	21.827,	23.125,	24.500,	25.957,	27.500,	29.135,	30.868,
             32.703, 34.648,	36.708,	38.891,	41.203,	43.654,	46.249,	48.999,	51.913,	55.000,	58.270,	61.735,
@@ -68,20 +73,20 @@ namespace Strings.Audio.Tuning {
             4186.0, 4434.9, 4698.6, 4978.0, 5274.0, 5587.7, 5919.9, 6271.9, 6644.9, 7040.0, 7458.6, 7902.1
         };
 
-        public uint length { get { return SCALE.length; } }
+        public uint length { get { return TONES.length; } }
 
         public uint closest_tone_index (double frequency) {
             var lo = 0;
-            var hi = SCALE.length - 1; var pos = 0;
-            if (frequency <= SCALE[lo]) {
+            var hi = TONES.length - 1; var pos = 0;
+            if (frequency <= TONES[lo]) {
                 pos = lo;
-            } else if (frequency >= SCALE[hi]) {
+            } else if (frequency >= TONES[hi]) {
                 pos = hi;
             } else {
                 while (lo <= hi) {
                     pos = lo + (hi - lo) / 2;
-                    if (SCALE[pos] == frequency) { break; }
-                    if (SCALE[pos] < frequency) {
+                    if (TONES[pos] == frequency) { break; }
+                    if (TONES[pos] < frequency) {
                         lo = pos + 1;
                     } else {
                         hi = pos - 1;
@@ -92,7 +97,7 @@ namespace Strings.Audio.Tuning {
         }
 
         public uint next_tone_index (uint index) {
-            return index < SCALE.length - 1 ? index + 1 : index;
+            return index < TONES.length - 1 ? index + 1 : index;
         }
 
         public uint previous_tone_index (uint index) {
@@ -100,8 +105,8 @@ namespace Strings.Audio.Tuning {
         }
 
         public void tone_info (uint index, ref ToneInfo info) {
-            assert (index >= 0 && index < SCALE.length);
-            info.frequency = SCALE[index];
+            assert (index >= 0 && index < TONES.length);
+            info.frequency = TONES[index];
             info.octave = (uint8) (index / 12);
             var oct_pos = index % 12;
             info.sharp = (oct_pos < 4 && oct_pos % 2 == 1) || (oct_pos > 4 && oct_pos % 2 == 0);
